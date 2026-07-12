@@ -14,6 +14,18 @@ const HASH_ALGORITHM = "SHA-256";
 
 const encoder = new TextEncoder();
 
+/**
+ * Copies a Uint8Array into a fresh ArrayBuffer. Needed because TypeScript's
+ * strict typing narrows `Uint8Array<ArrayBufferLike>` to include
+ * `SharedArrayBuffer`, which Web Crypto's `BufferSource` parameter type
+ * rejects. Explicitly materialising an ArrayBuffer sidesteps the issue.
+ */
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 function encodeBase64Url(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) {
@@ -60,7 +72,7 @@ async function derivePbkdf2Bits(
 ): Promise<Uint8Array> {
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
-    encoder.encode(password),
+    toArrayBuffer(encoder.encode(password)),
     "PBKDF2",
     false,
     ["deriveBits"],
@@ -69,7 +81,7 @@ async function derivePbkdf2Bits(
   const derived = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
-      salt,
+      salt: toArrayBuffer(salt),
       iterations,
       hash: HASH_ALGORITHM,
     },
