@@ -1,0 +1,17 @@
+{
+  "title": "Account",
+  "loading": "Loading…",
+  "loadError": "Failed to load account information.",
+  "disabledDescription": "Multi-user accounts are not enabled for this deployment.",
+  "notSignedIn": "You are not signed in.",
+  "emailLabel": "Email",
+  "signOut": "Sign out",
+  "signingOut": "Signing out…",
+  "signOutError": "Sign out failed. Please try again.",
+  "quotaTitle": "Daily request quota",
+  "quotaUsage": "Used {used} / {limit}",
+  "quotaRemaining": "{remaining} remaining",
+  "quotaResetAt": "Resets at {at}",
+  "quotaDescription": "Quotas count requests to AI routes (chat, search, RAG, voice, doc-parse) over a rolling 24-hour window, not tokens.",
+  "refresh": "Refresh"
+}

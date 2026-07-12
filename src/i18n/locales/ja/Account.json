@@ -1,0 +1,17 @@
+{
+  "title": "アカウント",
+  "loading": "読み込み中…",
+  "loadError": "アカウント情報の読み込みに失敗しました。",
+  "disabledDescription": "このデプロイではマルチユーザーアカウントは有効になっていません。",
+  "notSignedIn": "ログインしていません。",
+  "emailLabel": "メールアドレス",
+  "signOut": "ログアウト",
+  "signingOut": "ログアウト中…",
+  "signOutError": "ログアウトに失敗しました。もう一度お試しください。",
+  "quotaTitle": "1日あたりのリクエスト枠",
+  "quotaUsage": "使用済み {used} / {limit}",
+  "quotaRemaining": "残り {remaining}",
+  "quotaResetAt": "リセット時刻: {at}",
+  "quotaDescription": "枠は 24 時間ローリングウィンドウ内の AI 経路（chat / search / RAG / voice / doc-parse）へのリクエスト数を数えるもので、トークン数ではありません。",
+  "refresh": "更新"
+}

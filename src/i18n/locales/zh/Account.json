@@ -1,0 +1,17 @@
+{
+  "title": "账户",
+  "loading": "加载中…",
+  "loadError": "无法加载账户信息。",
+  "disabledDescription": "此部署未启用多用户账户系统。",
+  "notSignedIn": "当前未登录。",
+  "emailLabel": "邮箱",
+  "signOut": "登出",
+  "signingOut": "正在登出…",
+  "signOutError": "登出失败，请重试。",
+  "quotaTitle": "每日请求配额",
+  "quotaUsage": "已使用 {used} / {limit}",
+  "quotaRemaining": "剩余 {remaining}",
+  "quotaResetAt": "重置时间：{at}",
+  "quotaDescription": "配额按滚动 24 小时窗口计算，仅统计聊天、搜索、RAG、语音、文档解析等消耗 AI 资源的请求。",
+  "refresh": "刷新"
+}
