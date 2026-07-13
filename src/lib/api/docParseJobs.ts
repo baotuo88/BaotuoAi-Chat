@@ -114,12 +114,9 @@ class UpstashDocumentParseJobStore implements DocumentParseJobStore {
     const { getSafeUrlPolicy: getPolicy } = await import(
       "../security/urlPolicy"
     );
-    const url = this.endpoint("set");
+    const url = this.endpoint("pipeline");
     const requestBody = JSON.stringify([
-      this.key(job.id),
-      JSON.stringify(job),
-      "PX",
-      String(ttlMs),
+      ["SET", this.key(job.id), JSON.stringify(job), "PX", String(ttlMs)],
     ]);
     const { response, text } = await safeFetchText(
       url,
