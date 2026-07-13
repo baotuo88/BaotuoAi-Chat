@@ -120,7 +120,7 @@ class UpstashDocumentParseJobStore implements DocumentParseJobStore {
         this.key(job.id),
         JSON.stringify(job),
         "PX",
-        ttlMs,
+        String(ttlMs),
       ]),
     });
     if (!response.ok) {
