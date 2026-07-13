@@ -110,22 +110,44 @@ class UpstashDocumentParseJobStore implements DocumentParseJobStore {
   }
 
   async create(job: DocumentParseJob, ttlMs: number): Promise<void> {
-    const { response } = await safeFetchSharedStoreJson(this.endpoint("set"), {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
+    const { safeFetchText } = await import("../security/safeFetch");
+    const { getSafeUrlPolicy: getPolicy } = await import(
+      "../security/urlPolicy"
+    );
+    const url = this.endpoint("set");
+    const requestBody = JSON.stringify([
+      this.key(job.id),
+      JSON.stringify(job),
+      "PX",
+      String(ttlMs),
+    ]);
+    const { response, text } = await safeFetchText(
+      url,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+        cache: "no-store",
       },
-      body: JSON.stringify([
-        this.key(job.id),
-        JSON.stringify(job),
-        "PX",
-        String(ttlMs),
-      ]),
-    });
+      {
+        policy: getPolicy("sharedStore"),
+        timeoutMs: 10_000,
+        maxResponseBytes: 1024 * 1024,
+      },
+    );
     if (!response.ok) {
+      const bodyPreview = text.slice(0, 500);
+      console.error("Upstash SET failed", {
+        status: response.status,
+        url,
+        requestBody,
+        responseBody: bodyPreview,
+      });
       throw new Error(
-        `Document job store failed with status ${response.status}`,
+        `Document job store failed with status ${response.status}: ${bodyPreview}`,
       );
     }
   }
