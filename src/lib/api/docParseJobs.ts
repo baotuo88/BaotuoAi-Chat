@@ -276,11 +276,16 @@ function assertMineruCodeOk(data: any, fallback: string) {
 }
 
 async function uploadSignedDocumentFile(file: File, url: string) {
+  // Mineru 返回的 file_url 是 OSS 类签名 URL —— 签名时不包含 Content-Type，
+  // 所以 PUT 时如果客户端自动带上 Content-Type（fetch 传 File/Blob 会自动填入 blob.type）
+  // 就会导致签名验证失败并返回 403。
+  // 传 ArrayBuffer 可以避免 undici/fetch 自动附加 Content-Type header。
+  const body = await file.arrayBuffer();
   const { response } = await safeFetchText(
     url,
     {
       method: "PUT",
-      body: file,
+      body,
     },
     {
       policy: getSafeUrlPolicy("docs"),
