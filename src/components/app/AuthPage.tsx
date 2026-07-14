@@ -53,6 +53,8 @@ export default function AuthPage() {
         // are torn down and re-hydrated under the new user's storage
         // namespace. A soft refresh would keep the previous store instances in
         // memory and could write one user's state into another's namespace.
+        // Wait briefly to ensure cookies are fully written before reload.
+        await new Promise((resolve) => setTimeout(resolve, 100));
         window.location.assign("/");
         return;
       }
