@@ -1,0 +1,20 @@
+{
+  "apiErrorHandler": {
+    "quotaExceeded": "1日の割り当て超過",
+    "quotaExceededDesc": "1日のリクエスト制限に達しました。",
+    "rateLimited": "リクエストが多すぎます",
+    "rateLimitedDesc": "しばらくしてから再度お試しください。",
+    "unauthorized": "認証が必要です",
+    "unauthorizedDesc": "セッションの有効期限が切れました。再度サインインしてください。",
+    "forbidden": "アクセスが拒否されました",
+    "forbiddenDesc": "この操作を実行する権限がありません。",
+    "notFound": "見つかりません",
+    "notFoundDesc": "要求されたリソースが見つかりませんでした。",
+    "serverError": "サーバーエラー",
+    "serverErrorDesc": "サーバーでエラーが発生しました。後でもう一度お試しください。",
+    "networkError": "ネットワークエラー",
+    "networkErrorDesc": "サーバーに接続できません。接続を確認してください。",
+    "defaultTitle": "リクエスト失敗",
+    "defaultDescription": "予期しないエラーが発生しました。"
+  }
+}

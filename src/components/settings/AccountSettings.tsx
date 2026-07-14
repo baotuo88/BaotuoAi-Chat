@@ -1,22 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { LogOut, RefreshCw, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-interface QuotaInfo {
-  limit: number;
-  used: number;
-  remaining: number;
-  resetAt: number;
-  exceeded: boolean;
-}
-
-interface AccountMeResponse {
-  enabled: boolean;
-  user: { id: string; email: string } | null;
-  quota?: QuotaInfo;
-}
+import { useAccountState } from "@/hooks/useAccountState";
 
 function formatDateTime(timestamp: number): string {
   try {
@@ -28,40 +15,9 @@ function formatDateTime(timestamp: number): string {
 
 const AccountSettings: React.FC = () => {
   const t = useTranslations("Account");
-  const [isLoading, setIsLoading] = useState(true);
+  const { state, isLoading, refresh } = useAccountState();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [state, setState] = useState<AccountMeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/auth/me", {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      const data = (await response
-        .json()
-        .catch(() => ({}))) as Partial<AccountMeResponse>;
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-      setState({
-        enabled: Boolean(data.enabled),
-        user: data.user ?? null,
-        quota: data.quota,
-      });
-    } catch {
-      setError(t("loadError"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -150,7 +106,7 @@ const AccountSettings: React.FC = () => {
             </h3>
             <button
               type="button"
-              onClick={() => void load()}
+              onClick={() => void refresh(true)}
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <RefreshCw size={12} aria-hidden="true" />

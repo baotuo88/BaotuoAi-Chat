@@ -1,0 +1,20 @@
+{
+  "apiErrorHandler": {
+    "quotaExceeded": "Daily Quota Exceeded",
+    "quotaExceededDesc": "Your daily request limit has been reached.",
+    "rateLimited": "Too Many Requests",
+    "rateLimitedDesc": "Please wait a moment before trying again.",
+    "unauthorized": "Authentication Required",
+    "unauthorizedDesc": "Your session has expired. Please sign in again.",
+    "forbidden": "Access Denied",
+    "forbiddenDesc": "You do not have permission to perform this action.",
+    "notFound": "Not Found",
+    "notFoundDesc": "The requested resource was not found.",
+    "serverError": "Server Error",
+    "serverErrorDesc": "The server encountered an error. Please try again later.",
+    "networkError": "Network Error",
+    "networkErrorDesc": "Unable to reach the server. Please check your connection.",
+    "defaultTitle": "Request Failed",
+    "defaultDescription": "An unexpected error occurred."
+  }
+}

@@ -69,6 +69,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAccountState } from "@/hooks/useAccountState";
 
 interface SidebarProps {
   sessions: Session[];
@@ -210,17 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Account state
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [accountState, setAccountState] = useState<{
-    enabled: boolean;
-    user: { id: string; email: string } | null;
-    quota?: {
-      limit: number;
-      used: number;
-      remaining: number;
-      resetAt: number;
-      exceeded: boolean;
-    };
-  } | null>(null);
+  const { state: accountState, refresh: refreshAccount } = useAccountState();
 
   // Section Expansion State
   const [expandedSections, setExpandedSections] = useState<{
@@ -272,43 +263,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [renamingId]);
 
-  // Fetch account info on mount
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          headers: { Accept: "application/json" },
-        });
-        const data = (await response.json().catch(() => ({}))) as {
-          enabled?: boolean;
-          user?: { id: string; email: string } | null;
-          quota?: {
-            limit: number;
-            used: number;
-            remaining: number;
-            resetAt: number;
-            exceeded: boolean;
-          };
-        };
-        if (!cancelled) {
-          setAccountState({
-            enabled: Boolean(data.enabled),
-            user: data.user ?? null,
-            quota: data.quota,
-          });
-        }
-      } catch {
-        if (!cancelled) {
-          setAccountState({ enabled: false, user: null });
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Account state is now managed by useAccountState hook
 
   useEffect(() => {
     if (!isModal || !isOpen) return;
@@ -1374,6 +1329,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                 )}
 
                 {/* Actions */}
+                {accountState.quota && (
+                  <>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        void refreshAccount(true);
+                      }}
+                    >
+                      <RefreshCw size={14} aria-hidden="true" />
+                      {t("quota")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onSelect={() => onOpenSettings()}>
                   <Settings size={14} aria-hidden="true" />
                   {t("settings")}
