@@ -1288,8 +1288,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <Tooltip
                 content={accountState.user.email}
-                side="right"
-                hidden={isOpen || accountMenuOpen}
+                position="right"
+                className={isOpen ? "w-full" : "w-full justify-center"}
               >
                 <DropdownMenuTrigger asChild>
                   <button
