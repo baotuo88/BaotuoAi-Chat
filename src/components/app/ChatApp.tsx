@@ -28,6 +28,7 @@ import { getAgentDetail } from "@/services/api/agentService";
 import { Message, Attachment, LobeAgent, SessionMessageTree } from "@/types";
 import { useChatStore } from "@/store/core/chatStore";
 import { useMemoryStore } from "@/store/core/memoryStore";
+import { useAIRoleStore } from "@/store/aiRoleStore";
 import { appDb } from "@/store/storage/storageConfig";
 import { formatModelName } from "@/store/core/settingsStore";
 import { handleTokenUsageUpdate } from "@/lib/utils/message";
@@ -1907,7 +1908,11 @@ const ChatApp = () => {
       void stopActiveGenerationWithFeedback();
     }
 
-    createSession();
+    const selectedRole = useAIRoleStore.getState().selectedRoleId;
+    const role = useAIRoleStore.getState().getRoleById(selectedRole);
+    const systemPrompt = role?.systemPrompt;
+
+    createSession(systemPrompt);
     navigateToPanel("chat");
   };
 

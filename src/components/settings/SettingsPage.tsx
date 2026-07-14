@@ -27,6 +27,7 @@ import MemorySettings from "./MemorySettings";
 import AboutSettings from "./AboutSettings";
 import AccountSettings from "./AccountSettings";
 import AdminSettings from "./AdminSettings";
+import AIRoleManager from "./AIRoleManager";
 import type { SettingsTabId } from "@/lib/chat/panelUrlState";
 
 const SETTINGS_TABS: Array<{
@@ -41,6 +42,7 @@ const SETTINGS_TABS: Array<{
   { id: "rag", labelKey: "tabRag", Icon: FolderSearch },
   { id: "voice", labelKey: "tabVoice", Icon: Mic },
   { id: "memory", labelKey: "tabMemory", Icon: Brain },
+  { id: "aiRoles", labelKey: "tabAIRoles", Icon: Brain },
   { id: "health", labelKey: "tabHealth", Icon: ShieldCheck },
   { id: "system", labelKey: "tabSystem", Icon: Settings },
   { id: "account", labelKey: "tabAccount", Icon: UserRound },
@@ -62,6 +64,8 @@ const renderTabContent = (activeTab: SettingsTabId) => {
       return <VoiceSettings />;
     case "memory":
       return <MemorySettings />;
+    case "aiRoles":
+      return <AIRoleManager />;
     case "health":
       return <DeploymentHealth />;
     case "system":

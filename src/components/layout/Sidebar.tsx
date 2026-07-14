@@ -70,6 +70,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAccountState } from "@/hooks/useAccountState";
+import AIRoleSelector from "@/components/chat/AIRoleSelector";
 
 interface SidebarProps {
   sessions: Session[];
@@ -1121,6 +1122,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <MessageSquarePlus size={16} aria-hidden="true" />
                     </button>
                   </Tooltip>
+                </div>
+
+                <div className="px-3 pt-2 pb-1">
+                  <AIRoleSelector />
                 </div>
 
                 <div

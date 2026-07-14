@@ -21,6 +21,7 @@ export const SETTINGS_TAB_VALUES = [
   "account",
   "admin",
   "about",
+  "aiRoles",
 ] as const;
 
 export type SettingsTabId = (typeof SETTINGS_TAB_VALUES)[number];
