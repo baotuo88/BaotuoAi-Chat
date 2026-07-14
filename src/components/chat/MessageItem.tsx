@@ -1477,7 +1477,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 initialContent={message.content}
                 initialTimestamp={message.timestamp}
                 onSave={(newContent) => {
-                  onEdit(message.id, newContent);
+                  onEdit?.(message.id, newContent);
                   setIsEditing(false);
                 }}
                 onCancel={() => setIsEditing(false)}
