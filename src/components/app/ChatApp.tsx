@@ -1909,7 +1909,7 @@ const ChatApp = () => {
     }
 
     const selectedRole = useAIRoleStore.getState().selectedRoleId;
-    const role = useAIRoleStore.getState().getRoleById(selectedRole);
+    const role = selectedRole ? useAIRoleStore.getState().getRoleById(selectedRole) : null;
     const systemPrompt = role?.systemPrompt;
 
     createSession(systemPrompt);
