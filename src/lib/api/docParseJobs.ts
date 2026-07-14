@@ -161,7 +161,7 @@ class UpstashDocumentParseJobStore implements DocumentParseJobStore {
       );
     }
 
-    if (!data.result) return undefined;
+    if (!data?.result) return undefined;
     return JSON.parse(data.result) as DocumentParseJob;
   }
 
