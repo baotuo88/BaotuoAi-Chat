@@ -548,7 +548,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
     if (isDeleteConfirming) {
       resetDeleteConfirmation();
       setShowMoreMenu(false);
-      onDelete(message.id);
+      onDelete?.(message.id);
       return;
     }
 
