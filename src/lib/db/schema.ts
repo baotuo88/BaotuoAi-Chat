@@ -5,9 +5,6 @@
  * quota tracking live server-side. Chat history, knowledge bases, and all
  * other user content remain local-first (IndexedDB/OPFS) and are never
  * written to this database.
- *
- * There is intentionally no admin UI for this data — quota/ban changes are
- * made by editing rows directly (see docs/environment-variables.md).
  */
 
 import {
@@ -44,6 +41,13 @@ export const users = pgTable("users", {
    */
   disabled: boolean("disabled").notNull().default(false),
 
+  /**
+   * Grants access to the admin panel (user list, quota/ban management,
+   * registration toggle, password reset). Bootstrap the first admin by
+   * setting this to true directly in the database.
+   */
+  isAdmin: boolean("is_admin").notNull().default(false),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -79,3 +83,23 @@ export const auditLogs = pgTable("audit_logs", {
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type NewAuditLog = typeof auditLogs.$inferInsert;
+
+/**
+ * Deployment-wide settings that an admin can change at runtime from the
+ * admin panel, without needing a redeploy or an env var change. Stored as a
+ * simple key/value table so new toggles can be added without a migration.
+ *
+ * Current keys:
+ *   - "registration_enabled": "true" | "false" — whether new sign-ups are
+ *     accepted by the register route.
+ */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type AppSetting = typeof appSettings.$inferSelect;
+export type NewAppSetting = typeof appSettings.$inferInsert;

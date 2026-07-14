@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { LogOut, RefreshCw, UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 interface QuotaInfo {
@@ -29,7 +28,6 @@ function formatDateTime(timestamp: number): string {
 
 const AccountSettings: React.FC = () => {
   const t = useTranslations("Account");
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [state, setState] = useState<AccountMeResponse | null>(null);
@@ -72,7 +70,9 @@ const AccountSettings: React.FC = () => {
     try {
       const response = await fetch("/api/auth/logout", { method: "POST" });
       if (!response.ok) throw new Error("Sign out failed");
-      router.refresh();
+      // Hard reload (not router.refresh) so the client-side zustand stores are
+      // torn down; the next user starts from their own namespace.
+      window.location.assign("/");
     } catch {
       setError(t("signOutError"));
       setIsSigningOut(false);

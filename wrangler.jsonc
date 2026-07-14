@@ -28,5 +28,12 @@
     // Keep only non-sensitive deployment defaults here. Set per-deployment
     // secrets and user-specific defaults in the Cloudflare dashboard.
     "DEPLOYMENT_MODE": "hosted",
+    // Single-instance self-hosting: allow rate-limit / job / registry stores
+    // to fall back to per-instance in-memory storage instead of requiring
+    // Upstash/Redis. Without this (or a configured shared store), hosted mode
+    // throws on the first rate-limit call, which surfaces as a 500 on
+    // register/login. If this deployment ever scales beyond one instance,
+    // switch to Upstash instead (RATE_LIMIT_STORE=upstash + credentials).
+    "ALLOW_MEMORY_STORE_FALLBACK": "true",
   },
 }

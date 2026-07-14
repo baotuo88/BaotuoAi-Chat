@@ -11,5 +11,6 @@
   "tabHealth": "Deployment Health",
   "tabSystem": "System Settings",
   "tabAccount": "Account",
+  "tabAdmin": "Admin",
   "tabAbout": "About"
 }

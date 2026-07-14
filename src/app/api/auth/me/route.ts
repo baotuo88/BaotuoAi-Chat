@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   return noStore(
     NextResponse.json({
       enabled: true,
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, isAdmin: user.isAdmin },
       quota,
     }),
   );

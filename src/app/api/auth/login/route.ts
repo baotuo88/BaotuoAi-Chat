@@ -11,6 +11,7 @@ import {
 import {
   ACCOUNT_SESSION_COOKIE,
   ACCOUNT_SESSION_MAX_AGE_SECONDS,
+  ACCOUNT_UID_COOKIE,
   createAccountSessionCookieValue,
 } from "@/lib/security/accountSession";
 import { verifyPassword } from "@/lib/security/passwordHash";
@@ -28,10 +29,6 @@ const cookieOptions = {
   path: "/",
 };
 
-// Dual-layer lockout mirroring `access/verify/route.ts`: throttle by client
-// IP (defends against brute-forcing many accounts from one source) and by
-// account email (defends against credential-stuffing one account from many
-// IPs), independently of each other.
 const LOGIN_MAX_ATTEMPTS = 8;
 const LOGIN_LOCKOUT_MS = 30 * 60 * 1000;
 
@@ -128,6 +125,16 @@ export async function POST(request: NextRequest) {
       }),
       { ...cookieOptions, maxAge: ACCOUNT_SESSION_MAX_AGE_SECONDS },
     );
+    // Non-httpOnly companion cookie so client-side storage can namespace
+    // per-user local data. Carries only the opaque userId (not a credential);
+    // all authorization still relies on the signed httpOnly session cookie.
+    response.cookies.set(ACCOUNT_UID_COOKIE, user.id, {
+      httpOnly: false,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: ACCOUNT_SESSION_MAX_AGE_SECONDS,
+    });
     return response;
   } catch (error) {
     return noStore(createApiErrorResponse(error));

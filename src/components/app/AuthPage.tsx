@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { ArrowRight, UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 type AuthMode = "login" | "register";
@@ -20,11 +19,11 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   LOGIN_LOCKED: "locked",
   REGISTER_RATE_LIMITED: "registerRateLimited",
   VALIDATION_ERROR: "validationError",
+  REGISTRATION_DISABLED: "registrationDisabled",
 };
 
 export default function AuthPage() {
   const t = useTranslations("Auth");
-  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +49,11 @@ export default function AuthPage() {
       const data = (await response.json().catch(() => ({}))) as AuthApiResponse;
 
       if (response.ok && data.ok) {
-        router.refresh();
+        // Hard reload (not router.refresh) so the client-side zustand stores
+        // are torn down and re-hydrated under the new user's storage
+        // namespace. A soft refresh would keep the previous store instances in
+        // memory and could write one user's state into another's namespace.
+        window.location.assign("/");
         return;
       }
 

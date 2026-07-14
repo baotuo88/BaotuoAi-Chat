@@ -19,6 +19,7 @@ export const SETTINGS_TAB_VALUES = [
   "health",
   "system",
   "account",
+  "admin",
   "about",
 ] as const;
 

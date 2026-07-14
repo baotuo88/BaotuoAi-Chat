@@ -621,3 +621,43 @@ export const LoginRequestSchema = z
     password: z.string().min(1).max(ACCOUNT_LIMITS.maxPasswordChars),
   })
   .strict();
+
+// ---------------------------------------------------------------------------
+// Admin panel request bodies. All admin routes additionally require the
+// caller to be an admin (see `requireAdmin`); these schemas only validate the
+// shape of the mutation payloads.
+// ---------------------------------------------------------------------------
+
+/**
+ * Update a user's quota override and/or disabled state. Both fields optional
+ * so the client can PATCH just one. `dailyQuota` accepts null to clear the
+ * override (fall back to the deployment default).
+ */
+export const AdminUpdateUserSchema = z
+  .object({
+    dailyQuota: z
+      .number()
+      .int()
+      .min(0)
+      .max(1_000_000)
+      .nullable()
+      .optional(),
+    disabled: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (body) => body.dailyQuota !== undefined || body.disabled !== undefined,
+    { message: "No fields to update" },
+  );
+
+export const AdminResetPasswordSchema = z
+  .object({
+    password: AccountPasswordSchema,
+  })
+  .strict();
+
+export const AdminUpdateSettingsSchema = z
+  .object({
+    registrationEnabled: z.boolean(),
+  })
+  .strict();

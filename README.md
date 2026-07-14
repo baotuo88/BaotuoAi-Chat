@@ -184,6 +184,74 @@ openssl rand -base64 32
 psql "postgres://user:pass@ep-xxxx.neon.tech/neondb?sslmode=require" -c "SELECT 1"
 ```
 
+#### Document parsing for non-text uploads (Excel, Word, PDF, PPT, images)
+
+Plain-text files (`.txt`, `.md`, `.json`, `.csv`, `.py`, `.js`, etc.) upload
+without any server configuration — the browser reads them directly. But binary
+office formats (`.xlsx`, `.docx`, `.pdf`, `.pptx`, scanned images) go through
+a document-parsing API to be converted into markdown before the model sees
+them. That API needs a key.
+
+**If uploading a `.txt` works but `.xlsx` or `.docx` fails**, the deployment
+is missing a document-parse provider key. Symptoms:
+
+- Frontend: "Configure a document parser API key to process non-text files"
+  or a generic 500 in the network tab.
+- `GET /api/health` returns `documentParse.default.configured: false`.
+
+Pick one of the two supported providers below and add its variables to
+**Vercel → Project → Settings → Environment Variables**, then Redeploy.
+
+| Variable                          | Required?             | Purpose                                                                                                                                              |
+| --------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DEFAULT_DOCUMENT_PARSE_PROVIDER` | Required to enable    | Which parser to use: `mineru` or `llamaParse`. Presence of this + the matching key is the on/off switch for server-side document parsing.            |
+| `DEFAULT_MINERU_API_TOKEN`        | Required with `mineru`     | Mineru API token. Handles Excel, Word, PDF, PPT, and scanned images. Chinese document layout works well; generous free tier.                    |
+| `DEFAULT_LLAMA_PARSE_API_KEY`     | Required with `llamaParse` | LlamaParse (LlamaIndex Cloud) API key. Alternative provider — English-first accuracy, paid tiers scale better for high volume.                  |
+| `DOCUMENT_PARSE_JOB_STORE`        | Recommended in hosted | Set to `upstash` so long-running parse jobs survive between serverless invocations. Reuses the same Upstash creds from the minimum-env block above.  |
+
+**Where to get each value**
+
+| Variable | How to obtain | Example value |
+| --- | --- | --- |
+| `DEFAULT_DOCUMENT_PARSE_PROVIDER` | Type it in yourself — either `mineru` or `llamaParse`. Choose the one whose key you have. | `mineru` |
+| `DEFAULT_MINERU_API_TOKEN` | 1) Sign up at [mineru.net](https://mineru.net) (Chinese-friendly, phone-number registration). 2) After login, open **Personal Center → API Management** (右上角头像 → 我的账户 → API 管理). 3) Click **Create Token / 创建 Token** and copy the JWT string. Free tier: ~2000 pages/month for personal use. | `eyJhbGciOi...` (long JWT string) |
+| `DEFAULT_LLAMA_PARSE_API_KEY` | 1) Sign up at [cloud.llamaindex.ai](https://cloud.llamaindex.ai). 2) Open **API Keys** in the left nav. 3) Click **Generate New Key**, copy the string starting with `llx-`. Free tier: 1000 pages/day. | `llx-abcdef1234567890...` |
+| `DOCUMENT_PARSE_JOB_STORE` | Type `upstash`. Uses the same Upstash Redis you already configured for rate limiting — no separate setup needed. | `upstash` |
+
+**Minimum config to make Excel/Word uploads work (Mineru path):**
+
+```bash
+DEFAULT_DOCUMENT_PARSE_PROVIDER=mineru
+DEFAULT_MINERU_API_TOKEN=eyJhbGciOi...   # your Mineru token
+DOCUMENT_PARSE_JOB_STORE=upstash          # already have Upstash configured
+```
+
+**Minimum config to make Excel/Word uploads work (LlamaParse path):**
+
+```bash
+DEFAULT_DOCUMENT_PARSE_PROVIDER=llamaParse
+DEFAULT_LLAMA_PARSE_API_KEY=llx-...       # your LlamaParse key
+DOCUMENT_PARSE_JOB_STORE=upstash
+```
+
+**Alternative — let each user bring their own key:** Leave all three above
+unset. After signing in, each user configures their own Mineru or LlamaParse
+key in **Settings → RAG → Document parsing**. The key is BYOK-encrypted with
+the server public key and only decrypted inside API routes, never stored in
+plaintext. Good for private deployments where you don't want to pay for
+everyone's parsing.
+
+**Verifying it works after deployment:**
+
+1. Open `https://your-domain/api/health` — look for `documentParse.default.configured: true`.
+2. In the app: **Settings → Deployment Health** → the "Document parsing" row should be green.
+3. Upload a small `.xlsx` in any chat — the file should attach and its text preview should appear inline.
+
+If step 1 returns `configured: false`, the environment variable is missing
+or mis-cased (all keys are case-sensitive). If step 2 is green but uploads
+still 502, the API token is invalid or out of quota — check the provider's
+dashboard.
+
 #### Multi-user accounts (email/password + per-user daily quota)
 
 Multi-user accounts are **optional** and only activate when `DATABASE_URL` is

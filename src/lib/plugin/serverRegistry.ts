@@ -55,17 +55,39 @@ class UpstashServerPluginRegistryStore implements ServerPluginRegistryStore {
   }
 
   async set(plugin: Plugin): Promise<void> {
-    const { response } = await safeFetchSharedStoreJson(this.endpoint("set"), {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
+    const { safeFetchText } = await import("../security/safeFetch");
+    const { getSafeUrlPolicy } = await import("../security/urlPolicy");
+    const url = this.endpoint("pipeline");
+    const requestBody = JSON.stringify([
+      ["SET", this.key(plugin.id), JSON.stringify(plugin)],
+    ]);
+    const { response, text } = await safeFetchText(
+      url,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+        cache: "no-store",
       },
-      body: JSON.stringify([this.key(plugin.id), JSON.stringify(plugin)]),
-    });
+      {
+        policy: getSafeUrlPolicy("sharedStore"),
+        timeoutMs: 10_000,
+        maxResponseBytes: 1024 * 1024,
+      },
+    );
     if (!response.ok) {
+      const bodyPreview = text.slice(0, 500);
+      console.error("Upstash plugin registry SET failed", {
+        status: response.status,
+        url,
+        requestBody,
+        responseBody: bodyPreview,
+      });
       throw new Error(
-        `Plugin registry store failed with status ${response.status}`,
+        `Plugin registry store failed with status ${response.status}: ${bodyPreview}`,
       );
     }
   }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   Server,
@@ -12,6 +12,7 @@ import {
   Brain,
   Info,
   UserRound,
+  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -25,12 +26,14 @@ import DeploymentHealth from "./DeploymentHealth";
 import MemorySettings from "./MemorySettings";
 import AboutSettings from "./AboutSettings";
 import AccountSettings from "./AccountSettings";
+import AdminSettings from "./AdminSettings";
 import type { SettingsTabId } from "@/lib/chat/panelUrlState";
 
 const SETTINGS_TABS: Array<{
   id: SettingsTabId;
   labelKey: string;
   Icon: LucideIcon;
+  adminOnly?: boolean;
 }> = [
   { id: "providers", labelKey: "tabProviders", Icon: Server },
   { id: "defaults", labelKey: "tabDefaults", Icon: Cpu },
@@ -41,6 +44,7 @@ const SETTINGS_TABS: Array<{
   { id: "health", labelKey: "tabHealth", Icon: ShieldCheck },
   { id: "system", labelKey: "tabSystem", Icon: Settings },
   { id: "account", labelKey: "tabAccount", Icon: UserRound },
+  { id: "admin", labelKey: "tabAdmin", Icon: Users, adminOnly: true },
   { id: "about", labelKey: "tabAbout", Icon: Info },
 ];
 
@@ -64,6 +68,8 @@ const renderTabContent = (activeTab: SettingsTabId) => {
       return <SystemSettings />;
     case "account":
       return <AccountSettings />;
+    case "admin":
+      return <AdminSettings />;
     case "about":
       return <AboutSettings />;
   }
@@ -83,7 +89,34 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const t = useTranslations("SettingsPage");
   const [localActiveTab, setLocalActiveTab] =
     useState<SettingsTabId>("providers");
+  const [isAdmin, setIsAdmin] = useState(false);
   const resolvedActiveTab = activeTab ?? localActiveTab;
+
+  // Admin-only tabs are hidden until we confirm the signed-in user is an
+  // admin via /api/auth/me. This is a UX gate only; every admin API route
+  // independently enforces authorization server-side via requireAdmin.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        const data = (await response.json().catch(() => ({}))) as {
+          user?: { isAdmin?: boolean } | null;
+        };
+        if (!cancelled) setIsAdmin(Boolean(data.user?.isAdmin));
+      } catch {
+        if (!cancelled) setIsAdmin(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleTabs = SETTINGS_TABS.filter((tab) => !tab.adminOnly || isAdmin);
 
   const setResolvedActiveTab = (tab: SettingsTabId) => {
     if (activeTab === undefined) {
@@ -102,10 +135,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     event: React.KeyboardEvent<HTMLButtonElement>,
     tabId: SettingsTabId,
   ) => {
-    const currentIndex = SETTINGS_TABS.findIndex((tab) => tab.id === tabId);
+    const currentIndex = visibleTabs.findIndex((tab) => tab.id === tabId);
     if (currentIndex < 0) return;
 
-    const lastIndex = SETTINGS_TABS.length - 1;
+    const lastIndex = visibleTabs.length - 1;
     const nextIndexByKey: Partial<Record<string, number>> = {
       ArrowDown: currentIndex === lastIndex ? 0 : currentIndex + 1,
       ArrowRight: currentIndex === lastIndex ? 0 : currentIndex + 1,
@@ -119,7 +152,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     if (nextIndex === undefined) return;
 
     event.preventDefault();
-    const nextTab = SETTINGS_TABS[nextIndex];
+    const nextTab = visibleTabs[nextIndex];
     if (!nextTab) return;
 
     setResolvedActiveTab(nextTab.id);
@@ -167,7 +200,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             aria-label={t("sections")}
             className="flex w-full flex-row gap-1 p-2 md:flex-col md:p-3"
           >
-            {SETTINGS_TABS.map(({ id, labelKey, Icon }) => {
+            {visibleTabs.map(({ id, labelKey, Icon }) => {
               const isSelected = resolvedActiveTab === id;
 
               return (

@@ -13,6 +13,16 @@ export const ACCOUNT_SESSION_SECRET_ENV = "ACCOUNT_SESSION_SECRET";
 export const ACCOUNT_SESSION_COOKIE = "neo_account_session";
 export const ACCOUNT_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
+/**
+ * Client-readable companion cookie carrying only the (non-sensitive) user id.
+ * The real authentication cookie (`ACCOUNT_SESSION_COOKIE`) stays httpOnly and
+ * signed; this one exists purely so client-side code can namespace local
+ * IndexedDB/OPFS data per user (so switching accounts in the same browser
+ * doesn't leak one user's chat history to another). It carries no
+ * authorization weight — the server never trusts it for auth.
+ */
+export const ACCOUNT_UID_COOKIE = "neo_account_uid";
+
 export interface AccountSessionPayload {
   userId: string;
   tokenVersion: number;

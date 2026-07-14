@@ -8,6 +8,13 @@
       "when": 1752278400000,
       "tag": "0000_initial_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752537600000,
+      "tag": "0001_admin_and_app_settings",
+      "breakpoints": true
     }
   ]
 }

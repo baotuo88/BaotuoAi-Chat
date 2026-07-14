@@ -112,6 +112,36 @@ export class AccountsDisabledError extends ApiError {
   }
 }
 
+export class RegistrationDisabledError extends ApiError {
+  constructor(
+    message: string = "New account registration is currently disabled",
+  ) {
+    super(message, 403, "REGISTRATION_DISABLED");
+    this.name = "RegistrationDisabledError";
+  }
+}
+
+export class AuthRequiredError extends ApiError {
+  constructor(message: string = "Sign in is required") {
+    super(message, 401, "ACCOUNT_SESSION_REQUIRED");
+    this.name = "AuthRequiredError";
+  }
+}
+
+export class AdminRequiredError extends ApiError {
+  constructor(message: string = "Administrator access is required") {
+    super(message, 403, "ADMIN_REQUIRED");
+    this.name = "AdminRequiredError";
+  }
+}
+
+export class UserNotFoundError extends ApiError {
+  constructor(message: string = "User not found") {
+    super(message, 404, "USER_NOT_FOUND");
+    this.name = "UserNotFoundError";
+  }
+}
+
 export interface PublicErrorPayload {
   error: string;
   code: string;

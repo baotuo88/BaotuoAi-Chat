@@ -2,6 +2,7 @@ import Common from "./ja/Common.json";
 import AccessPassword from "./ja/AccessPassword.json";
 import Auth from "./ja/Auth.json";
 import Account from "./ja/Account.json";
+import Admin from "./ja/Admin.json";
 import SettingsPage from "./ja/SettingsPage.json";
 import DeploymentHealth from "./ja/DeploymentHealth.json";
 import System from "./ja/System.json";
@@ -34,6 +35,7 @@ const messages = {
   AccessPassword,
   Auth,
   Account,
+  Admin,
   SettingsPage,
   DeploymentHealth,
   System,
