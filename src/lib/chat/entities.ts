@@ -241,7 +241,7 @@ export function normalizeSessionConfig(
   };
 }
 
-export function normalizeSession(session: Session): Session {
+export function normalizeSession(session: Partial<Session> & Pick<Session, "id" | "title" | "model">): Session {
   return {
     ...session,
     title: normalizeSessionTitle(session.title),
@@ -253,6 +253,9 @@ export function normalizeSession(session: Session): Session {
           )
         : undefined,
     messageCount: Math.max(0, Math.floor(Number(session.messageCount) || 0)),
+    createdAt: Number.isFinite(Number(session.createdAt))
+      ? Number(session.createdAt)
+      : Date.now(),
     updatedAt: Number.isFinite(Number(session.updatedAt))
       ? Number(session.updatedAt)
       : Date.now(),
