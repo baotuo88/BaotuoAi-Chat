@@ -1,0 +1,17 @@
+{
+  "SharePage": {
+    "loading": "共有された会話を読み込み中...",
+    "notFound": "会話が見つかりません",
+    "notFoundDescription": "この共有リンクは無効か、期限切れです。",
+    "poweredBy": "技術提供",
+    "shareConversation": "会話を共有",
+    "copyLink": "リンクをコピー",
+    "linkCopied": "リンクをクリップボードにコピーしました！",
+    "deleteShare": "共有を削除",
+    "confirmDelete": "この共有を削除してもよろしいですか？",
+    "shareExpired": "この共有は期限切れです",
+    "createShare": "共有リンクを作成",
+    "shareCreated": "共有リンクが作成されました！",
+    "shareFailed": "共有リンクの作成に失敗しました"
+  }
+}

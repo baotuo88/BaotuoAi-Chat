@@ -254,6 +254,7 @@ export interface Session {
   title: string;
   messages?: Message[];
   messageCount: number;
+  createdAt: number;
   updatedAt: number;
   model: string;
   systemInstruction?: string;
@@ -268,6 +269,8 @@ export interface Session {
     injectedMemoryIds: string[];
     updatedAt?: number;
   };
+  shareId?: string;
+  isPublic?: boolean;
 }
 
 export interface Workspace {

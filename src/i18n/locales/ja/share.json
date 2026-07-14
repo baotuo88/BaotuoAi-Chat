@@ -1,0 +1,21 @@
+{
+  "share": {
+    "title": "会話を共有",
+    "description": "この会話の共有リンクを作成",
+    "createLink": "共有リンクを作成",
+    "copyLink": "リンクをコピー",
+    "shareUrl": "共有リンク",
+    "expiresIn": "有効期限",
+    "neverExpires": "無期限",
+    "1hour": "1時間後",
+    "1day": "1日後",
+    "7days": "7日後",
+    "existingShares": "既存の共有",
+    "views": "閲覧回数",
+    "confirmDelete": "この共有リンクを削除してもよろしいですか?",
+    "shareSuccess": "共有リンクを作成しました",
+    "shareError": "共有リンクの作成に失敗しました",
+    "copySuccess": "クリップボードにコピーしました",
+    "copyError": "コピーに失敗しました"
+  }
+}

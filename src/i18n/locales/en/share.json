@@ -1,0 +1,21 @@
+{
+  "share": {
+    "title": "Share Conversation",
+    "description": "Create a shareable link for this conversation",
+    "createLink": "Create Share Link",
+    "copyLink": "Copy Link",
+    "shareUrl": "Share Link",
+    "expiresIn": "Expires In",
+    "neverExpires": "Never Expires",
+    "1hour": "1 Hour",
+    "1day": "1 Day",
+    "7days": "7 Days",
+    "existingShares": "Existing Shares",
+    "views": "Views",
+    "confirmDelete": "Are you sure you want to delete this share link?",
+    "shareSuccess": "Share link created",
+    "shareError": "Failed to create share link",
+    "copySuccess": "Copied to clipboard",
+    "copyError": "Failed to copy"
+  }
+}

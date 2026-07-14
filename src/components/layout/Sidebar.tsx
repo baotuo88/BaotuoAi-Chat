@@ -16,6 +16,7 @@ import { appDb } from "@/store/storage/storageConfig";
 import Tooltip from "../ui/Tooltip";
 import WorkspaceSettingsModal from "./WorkspaceSettingsModal";
 import SidebarSearch from "./SidebarSearch";
+import ShareDialog from "../chat/ShareDialog";
 import {
   calculateSidebarPaneHeights,
   type SidebarPaneHeights,
@@ -29,6 +30,7 @@ import {
   PenLine,
   Trash2,
   Sparkles,
+  Share2,
   PinOff,
   Check,
   X,
@@ -209,6 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [shareDialogSessionId, setShareDialogSessionId] = useState<string | null>(null);
 
   // Account state
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -1470,6 +1473,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </DropdownMenuItem>
                     )}
 
+                    {hasMessages && (
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setContextMenu(null);
+                          setShareDialogSessionId(session.id);
+                        }}
+                      >
+                        <Share2 size={14} aria-hidden="true" />
+                        {t("share")}
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>
                         <FolderInput size={14} aria-hidden="true" />
@@ -1612,6 +1627,14 @@ const Sidebar: React.FC<SidebarProps> = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
+
+        {/* Share Dialog */}
+        {shareDialogSessionId && (
+          <ShareDialog
+            session={sessions.find(s => s.id === shareDialogSessionId)!}
+            onClose={() => setShareDialogSessionId(null)}
+          />
         )}
       </div>
     </div>

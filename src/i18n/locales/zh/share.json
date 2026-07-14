@@ -1,0 +1,21 @@
+{
+  "share": {
+    "title": "分享对话",
+    "description": "创建一个可分享的对话链接",
+    "createLink": "创建分享链接",
+    "copyLink": "复制链接",
+    "shareUrl": "分享链接",
+    "expiresIn": "过期时间",
+    "neverExpires": "永不过期",
+    "1hour": "1 小时后",
+    "1day": "1 天后",
+    "7days": "7 天后",
+    "existingShares": "现有分享",
+    "views": "浏览次数",
+    "confirmDelete": "确定要删除这个分享链接吗?",
+    "shareSuccess": "分享链接已创建",
+    "shareError": "创建分享链接失败",
+    "copySuccess": "已复制到剪贴板",
+    "copyError": "复制失败"
+  }
+}

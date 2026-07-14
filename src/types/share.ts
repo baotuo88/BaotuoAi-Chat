@@ -1,26 +1,28 @@
-export interface SharedChat {
-  id: string; // Unique share ID
-  sessionId: string; // Original session ID
-  userId: string; // User who created the share
+export interface SharedConversation {
+  id: string; // shareId
+  sessionId: string;
   title: string;
   messages: Array<{
     id: string;
-    role: "user" | "assistant";
+    role: "user" | "model";
     content: string;
-    createdAt: number;
+    timestamp: number;
+    model?: string;
   }>;
-  model?: string;
   createdAt: number;
-  expiresAt?: number; // Optional expiration timestamp
+  expiresAt?: number;
   viewCount: number;
+  isPublic: boolean;
 }
 
-export interface CreateShareRequest {
+export interface ShareLinkOptions {
   sessionId: string;
-  expiresIn?: number; // Optional expiration in milliseconds
+  includeSystemPrompt?: boolean;
+  expiresIn?: number; // milliseconds, undefined = never expires
 }
 
-export interface CreateShareResponse {
+export interface ShareLinkResult {
   shareId: string;
-  shareUrl: string;
+  url: string;
+  expiresAt?: number;
 }

@@ -92,15 +92,16 @@ interface MessageItemProps {
     index: number;
     count: number;
   };
-  onEdit: (id: string, newContent: string) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (id: string, newContent: string) => void;
+  onDelete?: (id: string) => void;
   onRegenerate?: () => void;
   onRetract?: () => void;
   canEditUserMessage?: boolean;
   onSubmitUserEdit?: (id: string, newContent: string) => void | Promise<void>;
   onVersionChange?: (id: string, direction: "prev" | "next") => void;
-  isLast: boolean;
+  isLast?: boolean;
   isTyping?: boolean;
+  isSharedView?: boolean;
 }
 
 type CopyStatus = "idle" | "copied" | "error";
@@ -425,7 +426,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
   canEditUserMessage = false,
   onSubmitUserEdit,
   onVersionChange,
+  isLast = false,
   isTyping = false,
+  isSharedView = false,
 }) => {
   const t = useTranslations("Message");
   const [isEditing, setIsEditing] = useState(false);
@@ -1673,7 +1676,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   </>
                 )}
 
-                {message.role === "user" && (
+                {message.role === "user" && !isSharedView && (
                   <>
                     {onRetract && (
                       <ActionButton
@@ -1720,7 +1723,20 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   </>
                 )}
 
-                {message.role === "model" && (
+                {message.role === "user" && isSharedView && (
+                  <ActionButton
+                    icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
+                    tooltip={copyTooltip}
+                    onClick={handleCopy}
+                    className={
+                      copyStatus === "error"
+                        ? "text-red-500 dark:text-red-400"
+                        : ""
+                    }
+                  />
+                )}
+
+                {message.role === "model" && !isSharedView && (
                   <>
                     <ActionButton
                       icon={<RefreshCw size={13} />}
@@ -1764,7 +1780,27 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   </>
                 )}
 
-                {message.role === "model" && (
+                {message.role === "model" && isSharedView && (
+                  <>
+                    <ActionButton
+                      icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
+                      tooltip={copyTooltip}
+                      onClick={handleCopy}
+                      className={
+                        copyStatus === "error"
+                          ? "text-red-500 dark:text-red-400"
+                          : ""
+                      }
+                    />
+                    <ActionButton
+                      icon={<Maximize2 size={13} />}
+                      tooltip={t("reading")}
+                      onClick={handleImmersiveReading}
+                    />
+                  </>
+                )}
+
+                {message.role === "model" && !isSharedView && (
                   <>
                     <ActionButton
                       icon={<Maximize2 size={13} />}
@@ -1821,29 +1857,31 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   </>
                 )}
 
-                <ActionButton
-                  icon={
-                    isDeleteConfirming ? (
-                      <Check size={13} />
-                    ) : (
-                      <Trash2 size={13} />
-                    )
-                  }
-                  tooltip={
-                    isDeleteConfirming ? t("confirmDelete") : t("delete")
-                  }
-                  onClick={handleDeleteClick}
-                  containerClass={
-                    message.role === "user" ? "flex" : "hidden! md:flex!"
-                  }
-                  className={
-                    isDeleteConfirming
-                      ? "text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/30"
-                      : "hover:text-red-600 dark:hover:text-red-400"
-                  }
-                />
+                {!isSharedView && (
+                  <ActionButton
+                    icon={
+                      isDeleteConfirming ? (
+                        <Check size={13} />
+                      ) : (
+                        <Trash2 size={13} />
+                      )
+                    }
+                    tooltip={
+                      isDeleteConfirming ? t("confirmDelete") : t("delete")
+                    }
+                    onClick={handleDeleteClick}
+                    containerClass={
+                      message.role === "user" ? "flex" : "hidden! md:flex!"
+                    }
+                    className={
+                      isDeleteConfirming
+                        ? "text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/30"
+                        : "hover:text-red-600 dark:hover:text-red-400"
+                    }
+                  />
+                )}
 
-                {message.role === "model" && (
+                {message.role === "model" && !isSharedView && (
                   <div className="relative md:hidden">
                     <DropdownMenu
                       open={showMoreMenu}
