@@ -14,7 +14,6 @@ import { v7 as uuidv7 } from "uuid";
 import Sidebar from "@/components/layout/Sidebar";
 import MessageItem from "@/components/chat/MessageItem";
 import MessageInput, { MessageInputRef } from "@/components/chat/MessageInput";
-import AIRoleSelector from "@/components/chat/AIRoleSelector";
 import AssistantHeader from "@/components/assistant/AssistantHeader";
 import Tooltip from "@/components/ui/Tooltip";
 import FollowUpQuestions from "@/components/chat/FollowUpQuestions";
@@ -2037,11 +2036,8 @@ const ChatApp = () => {
               </div>
 
               {shouldShowChatTitleBar && (
-                <div className="absolute left-1/2 top-1/2 flex max-w-[70%] -translate-x-1/2 -translate-y-1/2 items-center gap-3">
-                  <AIRoleSelector />
-                  <span className="truncate font-bold text-foreground">
-                    {currentSession?.title || t("newChat")}
-                  </span>
+                <div className="absolute left-1/2 top-1/2 max-w-[50%] -translate-x-1/2 -translate-y-1/2 truncate text-center font-bold text-foreground">
+                  {currentSession?.title || t("newChat")}
                 </div>
               )}
 

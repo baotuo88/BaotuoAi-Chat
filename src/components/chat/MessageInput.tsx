@@ -39,6 +39,7 @@ import RemoteFileModal from "../modals/RemoteFileModal";
 import KnowledgeSelectionModal from "../knowledge/KnowledgeSelectionModal";
 import SafeImage from "../ui/SafeImage";
 import MessageInputAttachmentTray from "./MessageInputAttachmentTray";
+import AIRoleSelector from "./AIRoleSelector";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -1738,6 +1739,9 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5">
+            {/* AI Role Selector */}
+            <AIRoleSelector compact />
+
             {/* Model Selector */}
             <div className="relative">
               <DropdownMenu
