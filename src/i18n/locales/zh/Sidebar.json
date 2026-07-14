@@ -58,5 +58,11 @@
   "workspaceActions": "工作区操作",
   "moveToWorkspaceAria": "将对话移动到工作区",
   "skillMarket": "技能",
-  "openSkillMarket": "打开技能"
+  "openSkillMarket": "打开技能",
+  "account": "账号",
+  "signedIn": "已登录",
+  "quota": "配额",
+  "quotaRemaining": "剩余 {count} 次",
+  "quotaExceeded": "配额已用完",
+  "signOut": "退出登录"
 }

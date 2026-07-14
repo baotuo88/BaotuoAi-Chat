@@ -58,5 +58,11 @@
   "workspaceActions": "Workspace actions",
   "moveToWorkspaceAria": "Move chat to workspace",
   "skillMarket": "Skills",
-  "openSkillMarket": "Open Skills"
+  "openSkillMarket": "Open Skills",
+  "account": "Account",
+  "signedIn": "Signed in",
+  "quota": "Quota",
+  "quotaRemaining": "{count} remaining",
+  "quotaExceeded": "Quota exceeded",
+  "signOut": "Sign Out"
 }

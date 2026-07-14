@@ -49,6 +49,9 @@ import {
   Moon,
   Laptop,
   Languages,
+  UserRound,
+  LogOut,
+  RefreshCw,
 } from "lucide-react";
 import { CHAT_ENTITY_LIMITS } from "@/config/limits";
 import { sanitizeDownloadFilename } from "@/lib/utils/filename";
@@ -206,6 +209,20 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
+  // Account state
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [accountState, setAccountState] = useState<{
+    enabled: boolean;
+    user: { id: string; email: string } | null;
+    quota?: {
+      limit: number;
+      used: number;
+      remaining: number;
+      resetAt: number;
+      exceeded: boolean;
+    };
+  } | null>(null);
+
   // Section Expansion State
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
@@ -255,6 +272,44 @@ const Sidebar: React.FC<SidebarProps> = ({
       renameInputRef.current.focus();
     }
   }, [renamingId]);
+
+  // Fetch account info on mount
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        const data = (await response.json().catch(() => ({}))) as {
+          enabled?: boolean;
+          user?: { id: string; email: string } | null;
+          quota?: {
+            limit: number;
+            used: number;
+            remaining: number;
+            resetAt: number;
+            exceeded: boolean;
+          };
+        };
+        if (!cancelled) {
+          setAccountState({
+            enabled: Boolean(data.enabled),
+            user: data.user ?? null,
+            quota: data.quota,
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setAccountState({ enabled: false, user: null });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isModal || !isOpen) return;
@@ -1223,8 +1278,132 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-200/50 p-3 dark:border-border">
+        <div className="shrink-0 border-t border-gray-200/50 p-3 space-y-2 dark:border-border">
+          {/* Account Menu - only show if accounts enabled and user signed in */}
+          {accountState?.enabled && accountState.user && (
+            <DropdownMenu
+              modal={false}
+              open={accountMenuOpen}
+              onOpenChange={setAccountMenuOpen}
+            >
+              <Tooltip
+                content={accountState.user.email}
+                side="right"
+                hidden={isOpen || accountMenuOpen}
+              >
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={t("account")}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-[color,background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 text-gray-600 hover:bg-gray-100/80 dark:text-muted-foreground dark:hover:bg-muted/60 ${isOpen ? "w-full" : "w-10 justify-center px-0"}`}
+                  >
+                    <div className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-semibold">
+                      {accountState.user.email.charAt(0).toUpperCase()}
+                    </div>
+                    {isOpen && (
+                      <span className="truncate text-sm">
+                        {accountState.user.email}
+                      </span>
+                    )}
+                    {isOpen && (
+                      <ChevronDown
+                        size={14}
+                        className={`ml-auto text-muted-foreground transition-transform duration-200 ease-out ${
+                          accountMenuOpen ? "rotate-180" : "rotate-0"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+              </Tooltip>
+              <DropdownMenuContent
+                side={isOpen ? "top" : "right"}
+                align={isOpen ? "start" : "end"}
+                className="w-64 overflow-visible"
+              >
+                {/* User Info */}
+                <div className="px-2 py-2 border-b border-border">
+                  <div className="flex items-center gap-2.5">
+                    <div className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-semibold">
+                      {accountState.user.email.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {accountState.user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("signedIn")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quota Info */}
+                {accountState.quota && (
+                  <div className="px-2 py-2.5 border-b border-border">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {t("quota")}
+                      </span>
+                      <span className="text-xs font-mono text-foreground">
+                        {accountState.quota.used} / {accountState.quota.limit}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full transition-all ${
+                          accountState.quota.exceeded
+                            ? "bg-red-500"
+                            : accountState.quota.used / accountState.quota.limit >= 0.8
+                              ? "bg-amber-500"
+                              : "bg-blue-500"
+                        }`}
+                        style={{
+                          width: `${Math.min((accountState.quota.used / accountState.quota.limit) * 100, 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {accountState.quota.remaining > 0
+                        ? t("quotaRemaining", {
+                            count: accountState.quota.remaining,
+                          })
+                        : t("quotaExceeded")}
+                    </p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <DropdownMenuItem onSelect={() => onOpenSettings()}>
+                  <Settings size={14} aria-hidden="true" />
+                  {t("settings")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={async () => {
+                    try {
+                      const response = await fetch("/api/auth/logout", {
+                        method: "POST",
+                      });
+                      if (!response.ok) throw new Error("Sign out failed");
+                      window.location.assign("/");
+                    } catch {
+                      // Silently fail - page will reload anyway
+                    }
+                  }}
+                  className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                >
+                  <LogOut size={14} aria-hidden="true" />
+                  {t("signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {/* Settings Menu */}
           <DropdownMenu
+            modal={false}
             open={isSettingsMenuOpen}
             onOpenChange={setIsSettingsMenuOpen}
           >

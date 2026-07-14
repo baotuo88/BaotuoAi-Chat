@@ -58,5 +58,11 @@
   "workspaceActions": "ワークスペースの操作",
   "moveToWorkspaceAria": "チャットをワークスペースに移動",
   "skillMarket": "スキル",
-  "openSkillMarket": "スキルを開く"
+  "openSkillMarket": "スキルを開く",
+  "account": "アカウント",
+  "signedIn": "サインイン済み",
+  "quota": "クォータ",
+  "quotaRemaining": "残り {count} 回",
+  "quotaExceeded": "クォータを超過しました",
+  "signOut": "サインアウト"
 }
