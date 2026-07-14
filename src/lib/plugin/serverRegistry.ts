@@ -50,7 +50,7 @@ class UpstashServerPluginRegistryStore implements ServerPluginRegistryStore {
       );
     }
 
-    if (!data.result) return undefined;
+    if (!data?.result) return undefined;
     return JSON.parse(data.result) as Plugin;
   }
 

@@ -103,8 +103,8 @@ class UpstashRateLimitStore implements RateLimitStore {
       throw new Error(`Rate limit store failed with status ${response.status}`);
     }
 
-    const count = Number(data[0]?.result);
-    const ttlMs = Number(data[1]?.result);
+    const count = Number(data?.[0]?.result);
+    const ttlMs = Number(data?.[1]?.result);
     if (
       !Number.isFinite(count) ||
       count < 1 ||
@@ -141,8 +141,8 @@ class UpstashRateLimitStore implements RateLimitStore {
       throw new Error(`Rate limit store failed with status ${response.status}`);
     }
 
-    const count = Number(data[0]?.result);
-    const ttlMs = Number(data[2]?.result);
+    const count = Number(data?.[0]?.result);
+    const ttlMs = Number(data?.[2]?.result);
 
     if (!Number.isFinite(count) || count < 1) {
       throw new Error("Rate limit store returned an invalid count");
