@@ -488,6 +488,7 @@ export const useChatStore = create<ChatState>()(
         const newSession = normalizeSession({
           id: uuidv7(),
           title: normalizedTitle,
+          createdAt: Date.now(),
           updatedAt: Date.now(),
           model: get().selectedModel,
           systemInstruction: systemInstruction,
