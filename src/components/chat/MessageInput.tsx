@@ -39,7 +39,6 @@ import Tooltip from "../ui/Tooltip";
 import RemoteFileModal from "../modals/RemoteFileModal";
 import WebImportModal from "./WebImportModal";
 import KnowledgeSelectionModal from "../knowledge/KnowledgeSelectionModal";
-import WebImportModal from "./WebImportModal";
 import SafeImage from "../ui/SafeImage";
 import MessageInputAttachmentTray from "./MessageInputAttachmentTray";
 import AIRoleSelector from "./AIRoleSelector";

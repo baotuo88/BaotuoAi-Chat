@@ -1,10 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Globe, Github, Loader2, X } from "lucide-react";
-import { scrapeWebPage, webScrapeResultToMarkdown } from "@/lib/utils/webScrape";
-import { importGitHubRepo, githubImportToMarkdown } from "@/lib/utils/githubImport";
+import { Globe, Link as LinkIcon, Loader2, X } from "lucide-react";
+import {
+  scrapeWebPage,
+  formatScrapedContentAsMarkdown,
+} from "@/lib/utils/webScrape";
+import {
+  importGitHubRepo,
+  type GitHubImportResult,
+} from "@/lib/utils/githubImport";
 
 interface WebImportModalProps {
   open: boolean;
@@ -14,12 +19,15 @@ interface WebImportModalProps {
 
 type ImportMode = "web" | "github";
 
+function githubImportToMarkdown(result: GitHubImportResult): string {
+  return result.content;
+}
+
 const WebImportModal: React.FC<WebImportModalProps> = ({
   open,
   onClose,
   onImport,
 }) => {
-  const t = useTranslations("Message");
   const [mode, setMode] = useState<ImportMode>("web");
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +47,7 @@ const WebImportModal: React.FC<WebImportModalProps> = ({
     try {
       if (mode === "web") {
         const result = await scrapeWebPage(url.trim());
-        const markdown = webScrapeResultToMarkdown(result);
+        const markdown = formatScrapedContentAsMarkdown(result);
         const filename = `${result.title.slice(0, 50).replace(/[^\w一-龥-]/g, "_")}.md`;
         onImport(markdown, filename);
       } else {
@@ -104,7 +112,7 @@ const WebImportModal: React.FC<WebImportModalProps> = ({
                 : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
             }`}
           >
-            <Github size={14} />
+            <LinkIcon size={14} />
             GitHub
           </button>
         </div>
