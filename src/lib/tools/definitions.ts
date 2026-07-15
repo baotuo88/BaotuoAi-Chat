@@ -133,4 +133,47 @@ export const BUILT_IN_TOOLS: ToolDefinition[] = [
           description: "小数位数，默认为 0（整数）",
         },
       },
-      required: ["m
+      required: ["min", "max"],
+    },
+  },
+  {
+    name: "generate_uuid",
+    description: "生成一个唯一的 UUID（通用唯一识别码）。",
+    parameters: {
+      type: "object",
+      properties: {
+        version: {
+          type: "string",
+          description: "UUID 版本：v4（随机）或 v7（时间有序）。默认为 v4。",
+          enum: ["v4", "v7"],
+        },
+        count: {
+          type: "number",
+          description: "生成数量，默认为 1",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "execute_javascript",
+    description: "在安全的沙箱环境中执行 JavaScript 代码。代码会在隔离环境中运行，无法访问网络和文件系统。",
+    parameters: {
+      type: "object",
+      properties: {
+        code: {
+          type: "string",
+          description: "要执行的 JavaScript 代码。可以使用 console.log() 输出结果。最后一行的表达式结果会被返回。",
+        },
+      },
+      required: ["code"],
+    },
+  },
+];
+
+/**
+ * 根据名称获取工具定义
+ */
+export function getToolByName(name: string): ToolDefinition | undefined {
+  return BUILT_IN_TOOLS.find((tool) => tool.name === name);
+}
