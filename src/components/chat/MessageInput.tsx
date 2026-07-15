@@ -1216,6 +1216,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
 
         {showWebImport && (
           <WebImportModal
+            open={showWebImport}
             onClose={() => setShowWebImport(false)}
             onImport={(markdown, fileName) => {
               const attachment: Attachment = {
