@@ -29,6 +29,7 @@ import {
   Library,
   PencilSparkles,
   Sparkles,
+  Wrench,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Attachment, ReasoningMode } from "@/types";
@@ -38,6 +39,7 @@ import Tooltip from "../ui/Tooltip";
 import RemoteFileModal from "../modals/RemoteFileModal";
 import WebImportModal from "./WebImportModal";
 import KnowledgeSelectionModal from "../knowledge/KnowledgeSelectionModal";
+import ToolsModal from "../tools/ToolsModal";
 import SafeImage from "../ui/SafeImage";
 import MessageInputAttachmentTray from "./MessageInputAttachmentTray";
 import AIRoleSelector from "./AIRoleSelector";
@@ -158,6 +160,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
     const [showWebImport, setShowWebImport] = useState(false);
     const [showRemoteModal, setShowRemoteModal] = useState(false);
     const [showKBModal, setShowKBModal] = useState(false);
+    const [showToolsModal, setShowToolsModal] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [isDragUploadActive, setIsDragUploadActive] = useState(false);
     const [isPolishingInput, setIsPolishingInput] = useState(false);
@@ -1467,6 +1470,21 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
                     />
                     <span>网页 / GitHub</span>
                   </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setShowToolsModal(true);
+                    }}
+                    disabled={isInputBusy}
+                  >
+                    <Wrench
+                      size={14}
+                      className="text-orange-500"
+                      aria-hidden="true"
+                    />
+                    <span>{t("tools")}</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -2000,7 +2018,14 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
           </div>
         </div>
       </div>
-    );
+
+      {/* Tools Modal */}
+      <ToolsModal
+        open={showToolsModal}
+        onClose={() => setShowToolsModal(false)}
+      />
+    </>
+  );
   },
 );
 

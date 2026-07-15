@@ -159,6 +159,11 @@ interface SettingsState {
   togglePluginFunction: (pluginId: string, functionName: string) => void;
   ensureBuiltInPlugins: () => void;
 
+  // Built-in Tools Management
+  enabledBuiltInTools: string[];
+  setEnabledBuiltInTools: (toolNames: string[]) => void;
+  toggleBuiltInTool: (toolName: string) => void;
+
   // Skill Management
   installedSkills: TextSkill[];
   customSkills: TextSkill[];
@@ -871,6 +876,20 @@ export const useSettingsStore = create<SettingsState>()(
               pluginConfigs,
               { unauthenticatedAllowedPluginIds: [UNSPLASH_PLUGIN.id] },
             ),
+          };
+        }),
+
+      // Built-in Tools Management
+      enabledBuiltInTools: [],
+      setEnabledBuiltInTools: (toolNames) =>
+        set({ enabledBuiltInTools: toolNames }),
+      toggleBuiltInTool: (toolName) =>
+        set((state) => {
+          const isEnabled = state.enabledBuiltInTools.includes(toolName);
+          return {
+            enabledBuiltInTools: isEnabled
+              ? state.enabledBuiltInTools.filter((name) => name !== toolName)
+              : [...state.enabledBuiltInTools, toolName],
           };
         }),
 

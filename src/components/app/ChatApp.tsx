@@ -18,6 +18,8 @@ import AssistantHeader from "@/components/assistant/AssistantHeader";
 import Tooltip from "@/components/ui/Tooltip";
 import FollowUpQuestions from "@/components/chat/FollowUpQuestions";
 import { Logo } from "@/components/ui/Icons";
+import ModelSelector from "@/components/chat/ModelSelector";
+import ModelComparisonView from "@/components/chat/ModelComparisonView";
 import type { ModelInfo } from "@/services/api/chatService";
 import { resolveSkillsForMessage } from "@/services/api/skillService";
 import {
@@ -218,6 +220,9 @@ const ChatApp = () => {
 
   const [viewMode, setViewMode] = useState<ChatPanel>("chat");
   const [settingsTab, setSettingsTab] = useState<SettingsTabId>("providers");
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [comparisonModels, setComparisonModels] = useState<string[]>([]);
+  const [comparisonPrompt, setComparisonPrompt] = useState("");
 
   const [serverConfigResolved, setServerConfigResolved] = useState(false);
   const [serverModelBootstrapReady, setServerModelBootstrapReady] =
@@ -1085,6 +1090,7 @@ const ChatApp = () => {
             outputBlocks,
           );
         },
+        useSettingsStore.getState().enabledBuiltInTools,
       );
 
       if (!isGenerationRunActive(generation)) return;
@@ -1449,6 +1455,7 @@ const ChatApp = () => {
             outputBlocks,
           );
         },
+        useSettingsStore.getState().enabledBuiltInTools,
       );
 
       if (!isGenerationRunActive(generation)) return;
@@ -1748,6 +1755,7 @@ const ChatApp = () => {
             outputBlocks,
           );
         },
+        useSettingsStore.getState().enabledBuiltInTools,
       );
 
       if (!isGenerationRunActive(generation) || !modelMessageId) return;
@@ -1920,7 +1928,33 @@ const ChatApp = () => {
     handleSendMessage(question, []);
   };
 
+  const handleStartComparison = (models: string[]) => {
+    setComparisonModels(models);
+    setComparisonMode(true);
+  };
+
+  const handleComparisonPromptSubmit = (prompt: string) => {
+    setComparisonPrompt(prompt);
+  };
+
+  const handleCloseComparison = () => {
+    setComparisonMode(false);
+    setComparisonModels([]);
+    setComparisonPrompt("");
+  };
+
   // --- Render ---
+
+  // Show comparison view if active
+  if (comparisonMode && comparisonModels.length > 0 && comparisonPrompt) {
+    return (
+      <ModelComparisonView
+        prompt={comparisonPrompt}
+        models={comparisonModels}
+        onClose={handleCloseComparison}
+      />
+    );
+  }
 
   return (
     <div className="relative flex h-dvh w-full overflow-hidden bg-background font-sans text-foreground transition-colors duration-300">
@@ -2179,10 +2213,21 @@ const ChatApp = () => {
                     </h1>
                   </div>
                 )}
+                <div className="flex items-center gap-2 mb-3">
+                  {!comparisonMode && availableModels.length >= 2 && (
+                    <ModelSelector onStartComparison={handleStartComparison} />
+                  )}
+                </div>
                 <MessageInput
                   ref={messageInputRef}
                   variant={messageInputVariant}
-                  onSend={handleSendMessage}
+                  onSend={(text, attachments) => {
+                    if (comparisonMode && comparisonModels.length > 0) {
+                      handleComparisonPromptSubmit(text);
+                    } else {
+                      handleSendMessage(text, attachments);
+                    }
+                  }}
                   onStop={isGenerating ? handleStopGeneration : undefined}
                   disabled={isGenerating || availableModels.length === 0}
                   availableModels={availableModels}

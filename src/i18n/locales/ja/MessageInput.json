@@ -87,5 +87,6 @@
   "activeSkillsCount": "有効なスキル {count} 件",
   "activeSkillsAria": "有効なスキル {count} 件",
   "installedSkills": "インストール済みスキル",
-  "noSkillsAvailable": "利用できるスキルはありません。"
+  "noSkillsAvailable": "利用できるスキルはありません。",
+  "tools": "ツール"
 }

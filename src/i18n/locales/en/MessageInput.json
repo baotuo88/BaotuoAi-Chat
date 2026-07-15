@@ -87,5 +87,6 @@
   "activeSkillsCount": "{count} Active Skills",
   "activeSkillsAria": "{count} active skills",
   "installedSkills": "Installed Skills",
-  "noSkillsAvailable": "No skills available."
+  "noSkillsAvailable": "No skills available.",
+  "tools": "Tools"
 }

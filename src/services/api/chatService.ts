@@ -14,6 +14,8 @@ import { useCoreSettingsStore } from "@/store/core/coreSettingsStore";
 import { useMemoryStore } from "@/store/core/memoryStore";
 import { v7 as uuidv7 } from "uuid";
 import { executePluginFunction } from "@/utils/pluginUtils";
+import { executeToolCall } from "@/lib/tools/executors";
+import { getToolByName } from "@/lib/tools/definitions";
 import { createSearchProvider } from "./searchService";
 import { getEnabledPluginFunctions } from "@/lib/plugin/resolve";
 import {
@@ -512,6 +514,7 @@ export const streamChatResponse = async (
   activePlugins?: string[], // Add activePlugins parameter
   skillsContext?: string,
   onOutputBlocks?: (outputBlocks: MessageOutputBlock[]) => void,
+  enabledBuiltInTools?: string[], // Add enabledBuiltInTools parameter
 ): Promise<string> => {
   const { providerId, modelName } = parseModelString(model);
 
@@ -625,6 +628,24 @@ export const streamChatResponse = async (
   const toolNames = new Set<string>();
 
   addInternalMemoryTools(tools, toolNames, newMessage);
+
+  // Add built-in tools
+  if (enabledBuiltInTools && enabledBuiltInTools.length > 0) {
+    enabledBuiltInTools.forEach((toolName) => {
+      const toolDef = getToolByName(toolName);
+      if (toolDef && !toolNames.has(toolDef.function.name)) {
+        toolNames.add(toolDef.function.name);
+        tools.push({
+          type: "function",
+          function: {
+            name: toolDef.function.name,
+            description: toolDef.function.description,
+            parameters: toolDef.function.parameters,
+          },
+        });
+      }
+    });
+  }
 
   if (activePlugins && activePlugins.length > 0) {
     activePlugins.forEach((pluginId) => {
@@ -1003,15 +1024,32 @@ export const streamChatResponse = async (
       const executedToolCalls = await Promise.all(
         pendingToolCalls.map(async (toolCall) => {
           try {
-            const resultData = isInternalMemoryTool(toolCall.name)
-              ? await executeMemorySearchTool(toolCall.args)
-              : await executePluginFunction(
-                  toolCall.name,
-                  toolCall.args,
-                  toolCall.auth,
-                  activePlugins,
-                  signal,
-                );
+            let resultData;
+
+            // 检查是否是内置工具
+            const isBuiltInTool = !!getToolByName(toolCall.name);
+
+            if (isInternalMemoryTool(toolCall.name)) {
+              resultData = await executeMemorySearchTool(toolCall.args);
+            } else if (isBuiltInTool) {
+              // 执行内置工具
+              const toolResult = await executeToolCall(toolCall.name, toolCall.args);
+              if (toolResult.success) {
+                resultData = toolResult.result;
+              } else {
+                resultData = { error: toolResult.error };
+              }
+            } else {
+              // 执行插件工具
+              resultData = await executePluginFunction(
+                toolCall.name,
+                toolCall.args,
+                toolCall.auth,
+                activePlugins,
+                signal,
+              );
+            }
+
             const isError =
               !!resultData &&
               typeof resultData === "object" &&
