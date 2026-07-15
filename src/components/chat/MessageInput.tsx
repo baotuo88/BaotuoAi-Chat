@@ -1460,7 +1460,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
                     }}
                     disabled={isInputBusy}
                   >
-                    <Globe2
+                    <Globe
                       size={14}
                       className="text-cyan-500"
                       aria-hidden="true"
@@ -2007,3 +2007,4 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
 MessageInput.displayName = "MessageInput";
 
 export default MessageInput;
+ 
