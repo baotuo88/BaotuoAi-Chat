@@ -633,14 +633,14 @@ export const streamChatResponse = async (
   if (enabledBuiltInTools && enabledBuiltInTools.length > 0) {
     enabledBuiltInTools.forEach((toolName) => {
       const toolDef = getToolByName(toolName);
-      if (toolDef && !toolNames.has(toolDef.function.name)) {
-        toolNames.add(toolDef.function.name);
+      if (toolDef && !toolNames.has(toolDef.name)) {
+        toolNames.add(toolDef.name);
         tools.push({
           type: "function",
           function: {
-            name: toolDef.function.name,
-            description: toolDef.function.description,
-            parameters: toolDef.function.parameters,
+            name: toolDef.name,
+            description: toolDef.description,
+            parameters: toolDef.parameters,
           },
         });
       }
