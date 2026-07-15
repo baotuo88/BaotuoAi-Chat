@@ -2020,15 +2020,15 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
       </div>
 
       {/* Tools Modal */}
-      <ToolsModal
-        open={showToolsModal}
-        onClose={() => setShowToolsModal(false)}
-      />
+      {showToolsModal && (
+        <ToolsModal
+          open={showToolsModal}
+          onClose={() => setShowToolsModal(false)}
+        />
+      )}
     </>
   );
   },
 );
 
-MessageInput.displayName = "MessageInput";
-
-export default MessageInput;
+MessageInput.displayName = "M
