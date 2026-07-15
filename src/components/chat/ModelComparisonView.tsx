@@ -312,12 +312,7 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
                   <div className="prose dark:prose-invert max-w-none">
                     <MessageItem
                       message={result.messages[0]}
-                      isStreaming={result.isGenerating}
-                      onRegenerate={() => {}}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                      onCopy={() => {}}
-                      showActions={false}
+                      isTyping={result.isGenerating}
                     />
                   </div>
                 ) : result.isGenerating ? (
