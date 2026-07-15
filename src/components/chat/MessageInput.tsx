@@ -2032,4 +2032,6 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
   },
 );
 
-MessageInput.display
+MessageInput.displayName = "MessageInput";
+
+export default MessageInput;

@@ -201,3 +201,6 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       </div>
     </div>
   );
+};
+
+export default ModelSelector;
