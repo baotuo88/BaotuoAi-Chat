@@ -110,9 +110,9 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
                     result.messages = [
                       {
                         id: `comparison-${model}`,
-                        role: "assistant",
+                        role: "model",
                         content: accumulatedContent,
-                        createdAt: Date.now(),
+                        timestamp: Date.now(),
                       },
                     ];
                     result.isGenerating = true;
