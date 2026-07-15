@@ -29,6 +29,7 @@ import {
   Library,
   PencilSparkles,
   Sparkles,
+  Github,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Attachment, ReasoningMode } from "@/types";
@@ -36,7 +37,9 @@ import { localizePluginMeta } from "@/lib/plugin/localizedMeta";
 import type { ModelInfo } from "@/services/api/chatService";
 import Tooltip from "../ui/Tooltip";
 import RemoteFileModal from "../modals/RemoteFileModal";
+import WebImportModal from "./WebImportModal";
 import KnowledgeSelectionModal from "../knowledge/KnowledgeSelectionModal";
+import WebImportModal from "./WebImportModal";
 import SafeImage from "../ui/SafeImage";
 import MessageInputAttachmentTray from "./MessageInputAttachmentTray";
 import AIRoleSelector from "./AIRoleSelector";
@@ -154,6 +157,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
     const [showPluginSelect, setShowPluginSelect] = useState(false);
     const [showReasoningSelect, setShowReasoningSelect] = useState(false);
     const [showAttachMenu, setShowAttachMenu] = useState(false);
+    const [showWebImport, setShowWebImport] = useState(false);
     const [showRemoteModal, setShowRemoteModal] = useState(false);
     const [showKBModal, setShowKBModal] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -1212,6 +1216,22 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
           />
         )}
 
+        {showWebImport && (
+          <WebImportModal
+            onClose={() => setShowWebImport(false)}
+            onImport={(markdown, fileName) => {
+              const attachment: Attachment = {
+                id: uuidv7(),
+                mimeType: "text/markdown",
+                data: btoa(unescape(encodeURIComponent(markdown))),
+                fileName,
+              };
+              appendAttachments([attachment]);
+              setShowWebImport(false);
+            }}
+          />
+        )}
+
         {/* Error Message Toast */}
         {errorMsg && (
           <div
@@ -1433,6 +1453,21 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
                       </DropdownMenuItem>
                     </>
                   )}
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setShowWebImport(true);
+                    }}
+                    disabled={isInputBusy}
+                  >
+                    <Globe2
+                      size={14}
+                      className="text-cyan-500"
+                      aria-hidden="true"
+                    />
+                    <span>网页 / GitHub</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
