@@ -20,7 +20,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     .filter((p) => p.enabled)
     .flatMap((provider) =>
       provider.models?.map((model) => ({
-        id: `${provider.id}/${model}`,
+        id: `${provider.id}:${model}`,
         name: model,
         provider: provider.name || provider.id,
       })) || []
