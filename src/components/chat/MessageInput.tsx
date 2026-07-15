@@ -29,7 +29,6 @@ import {
   Library,
   PencilSparkles,
   Sparkles,
-  Github,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Attachment, ReasoningMode } from "@/types";
