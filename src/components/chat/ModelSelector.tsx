@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { MessageSquare, Plus, X } from "lucide-react";
-import { useSettingsStore } from "@/store/core/settingsStore";
+import { useCoreSettingsStore } from "@/store/core/coreSettingsStore";
 
 interface ModelSelectorProps {
   onStartComparison: (models: string[]) => void;
@@ -11,7 +11,7 @@ interface ModelSelectorProps {
 export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onStartComparison,
 }) => {
-  const { providers } = useSettingsStore();
+  const providers = useCoreSettingsStore((state) => state.providers);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [showSelector, setShowSelector] = useState(false);
 
@@ -201,6 +201,3 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       </div>
     </div>
   );
-};
-
-export default ModelSelector;
