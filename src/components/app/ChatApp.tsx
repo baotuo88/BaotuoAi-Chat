@@ -2247,4 +2247,4 @@ const ChatApp = () => {
   );
 };
 
-export
+export default ChatApp;

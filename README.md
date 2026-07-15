@@ -1,8 +1,10 @@
 # Baotuo Chat
 
+
 <p align="center">
   <img src="public/logo.png" width="96" alt="Baotuo Chat logo" />
 </p>
+
 
 <p align="center">
   <strong>A local-first AI chat workspace for models, agents, skills, plugins, search, RAG, voice, memory, and artifacts.</strong>
