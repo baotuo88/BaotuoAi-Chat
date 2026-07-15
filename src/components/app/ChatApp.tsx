@@ -32,7 +32,7 @@ import { useChatStore } from "@/store/core/chatStore";
 import { useMemoryStore } from "@/store/core/memoryStore";
 import { useAIRoleStore } from "@/store/aiRoleStore";
 import { appDb } from "@/store/storage/storageConfig";
-import { formatModelName } from "@/store/core/settingsStore";
+import { formatModelName, useSettingsStore } from "@/store/core/settingsStore";
 import { handleTokenUsageUpdate } from "@/lib/utils/message";
 import { buildAvailableModels, resolveSelectedModel } from "@/lib/utils/models";
 import {
