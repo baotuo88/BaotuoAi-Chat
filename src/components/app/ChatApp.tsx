@@ -382,7 +382,9 @@ const ChatApp = () => {
 
   // Logic for Assistant List Animation
   const isChatEmpty =
-    messages.length === 0 && !currentSession?.systemInstruction;
+    messages.length === 0 &&
+    !currentSession?.systemInstruction &&
+    !(comparisonMode && comparisonModels.length > 0 && comparisonPrompt);
   const [welcomeState, setWelcomeState] = useState<
     "visible" | "exiting" | "hidden"
   >("hidden");
@@ -1945,17 +1947,6 @@ const ChatApp = () => {
 
   // --- Render ---
 
-  // Show comparison view if active
-  if (comparisonMode && comparisonModels.length > 0 && comparisonPrompt) {
-    return (
-      <ModelComparisonView
-        prompt={comparisonPrompt}
-        models={comparisonModels}
-        onClose={handleCloseComparison}
-      />
-    );
-  }
-
   return (
     <div className="relative flex h-dvh w-full overflow-hidden bg-background font-sans text-foreground transition-colors duration-300">
       <a className="skip-link" href="#main-chat">
@@ -2175,6 +2166,18 @@ const ChatApp = () => {
                         </React.Fragment>
                       );
                     })}
+
+                    {comparisonMode &&
+                      comparisonModels.length > 0 &&
+                      comparisonPrompt && (
+                        <div className="mt-4">
+                          <ModelComparisonView
+                            prompt={comparisonPrompt}
+                            models={comparisonModels}
+                            onClose={handleCloseComparison}
+                          />
+                        </div>
+                      )}
 
                     <div ref={messagesEndRef} />
                   </div>

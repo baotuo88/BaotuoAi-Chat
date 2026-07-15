@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { X, Copy, Check, RotateCw, Trash2 } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { X, Copy, Check, RotateCw } from "lucide-react";
 import { Message } from "@/types";
 import MessageItem from "@/components/chat/MessageItem";
-import { useChatStore } from "@/store/core/chatStore";
+import { streamChatResponse } from "@/services/api/chatService";
 
 interface ComparisonResult {
   model: string;
@@ -30,8 +30,87 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
   const [copiedModel, setCopiedModel] = useState<string | null>(null);
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
 
+  const generateResponse = useCallback(
+    async (model: string, promptText: string) => {
+      const abortController = new AbortController();
+      abortControllersRef.current.set(model, abortController);
+
+      let accumulated = "";
+
+      try {
+        await streamChatResponse(
+          "comparison",
+          model,
+          [],
+          promptText,
+          [],
+          {},
+          (text) => {
+            accumulated = text;
+            setResults((prev) => {
+              const newResults = new Map(prev);
+              const result = newResults.get(model);
+              if (result) {
+                newResults.set(model, {
+                  ...result,
+                  messages: [
+                    {
+                      id: `comparison-${model}`,
+                      role: "model",
+                      content: accumulated,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                  isGenerating: true,
+                });
+              }
+              return newResults;
+            });
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          abortController.signal,
+        );
+
+        setResults((prev) => {
+          const newResults = new Map(prev);
+          const result = newResults.get(model);
+          if (result) {
+            newResults.set(model, { ...result, isGenerating: false });
+          }
+          return newResults;
+        });
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+        setResults((prev) => {
+          const newResults = new Map(prev);
+          const result = newResults.get(model);
+          if (result) {
+            newResults.set(model, {
+              ...result,
+              isGenerating: false,
+              error: error instanceof Error ? error.message : "生成失败",
+            });
+          }
+          return newResults;
+        });
+      } finally {
+        abortControllersRef.current.delete(model);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
-    // 初始化结果
+    const controllers = abortControllersRef.current;
+    controllers.forEach((controller) => controller.abort());
+    controllers.clear();
+
     const initialResults = new Map<string, ComparisonResult>();
     models.forEach((model) => {
       initialResults.set(model, {
@@ -42,139 +121,33 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
     });
     setResults(initialResults);
 
-    // 为每个模型发起请求
     models.forEach((model) => {
-      generateResponse(model);
+      generateResponse(model, prompt);
     });
 
-    // 清理函数
     return () => {
-      abortControllersRef.current.forEach((controller) => controller.abort());
-      abortControllersRef.current.clear();
+      controllers.forEach((controller) => controller.abort());
+      controllers.clear();
     };
-  }, []);
-
-  const generateResponse = async (model: string) => {
-    const abortController = new AbortController();
-    abortControllersRef.current.set(model, abortController);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          model,
-          stream: true,
-        }),
-        signal: abortController.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedContent = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
-
-            try {
-              const parsed = JSON.parse(data);
-
-              if (parsed.type === "content") {
-                accumulatedContent += parsed.content;
-
-                setResults((prev) => {
-                  const newResults = new Map(prev);
-                  const result = newResults.get(model);
-                  if (result) {
-                    result.messages = [
-                      {
-                        id: `comparison-${model}`,
-                        role: "model",
-                        content: accumulatedContent,
-                        timestamp: Date.now(),
-                      },
-                    ];
-                    result.isGenerating = true;
-                  }
-                  return newResults;
-                });
-              }
-            } catch (e) {
-              // 忽略解析错误
-            }
-          }
-        }
-      }
-
-      // 完成生成
-      setResults((prev) => {
-        const newResults = new Map(prev);
-        const result = newResults.get(model);
-        if (result) {
-          result.isGenerating = false;
-        }
-        return newResults;
-      });
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        return;
-      }
-
-      setResults((prev) => {
-        const newResults = new Map(prev);
-        const result = newResults.get(model);
-        if (result) {
-          result.isGenerating = false;
-          result.error =
-            error instanceof Error ? error.message : "生成失败";
-        }
-        return newResults;
-      });
-    } finally {
-      abortControllersRef.current.delete(model);
-    }
-  };
+  }, [prompt, models, generateResponse]);
 
   const handleCopy = async (model: string, content: string) => {
     try {
       await navigator.clipboard.writeText(content);
       setCopiedModel(model);
       setTimeout(() => setCopiedModel(null), 2000);
-    } catch (error) {
-      console.error("Failed to copy:", error);
+    } catch {
+      // ignore clipboard errors
     }
   };
 
   const handleRegenerate = (model: string) => {
-    // 取消现有请求
     const controller = abortControllersRef.current.get(model);
     if (controller) {
       controller.abort();
       abortControllersRef.current.delete(model);
     }
 
-    // 重置状态
     setResults((prev) => {
       const newResults = new Map(prev);
       newResults.set(model, {
@@ -185,8 +158,7 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
       return newResults;
     });
 
-    // 重新生成
-    generateResponse(model);
+    generateResponse(model, prompt);
   };
 
   const handleStop = (model: string) => {
@@ -200,135 +172,122 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
       const newResults = new Map(prev);
       const result = newResults.get(model);
       if (result) {
-        result.isGenerating = false;
+        newResults.set(model, { ...result, isGenerating: false });
       }
       return newResults;
     });
   };
 
-  return (
-    <div className="fixed inset-0 z-9999 bg-white dark:bg-gray-900">
-      {/* 头部 */}
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              模型对比
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              对比 {models.length} 个模型的回答
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-label="关闭对比视图"
-          >
-            <X size={20} />
-          </button>
-        </div>
+  const gridColsClass =
+    models.length === 2
+      ? "grid-cols-1 md:grid-cols-2"
+      : models.length === 3
+        ? "grid-cols-1 md:grid-cols-3"
+        : "grid-cols-1 md:grid-cols-2 xl:grid-cols-4";
 
-        {/* 提示词显示 */}
-        <div className="px-6 pb-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              提示词:
-            </p>
-            <p className="text-gray-900 dark:text-gray-100">{prompt}</p>
-          </div>
+  return (
+    <div className="w-full">
+      {/* 头部 */}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            模型对比
+          </h2>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            对比 {models.length} 个模型的回答
+          </p>
         </div>
+        <button
+          onClick={onClose}
+          className="shrink-0 rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          aria-label="关闭对比"
+          title="关闭对比"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* 提示词 */}
+      <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+        <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">提示词</p>
+        <p className="text-sm text-gray-900 dark:text-gray-100">{prompt}</p>
       </div>
 
       {/* 对比网格 */}
-      <div
-        className="overflow-auto"
-        style={{ height: "calc(100vh - 180px)" }}
-      >
-        <div
-          className={`grid gap-4 p-6 ${
-            models.length === 2
-              ? "grid-cols-2"
-              : models.length === 3
-                ? "grid-cols-3"
-                : "grid-cols-2 xl:grid-cols-4"
-          }`}
-        >
-          {Array.from(results.entries()).map(([model, result]) => (
-            <div
-              key={model}
-              className="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 flex flex-col"
-            >
-              {/* 模型头部 */}
-              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between bg-gray-50 dark:bg-gray-900 rounded-t-xl">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                  {model}
-                </h3>
-                <div className="flex items-center gap-2">
-                  {result.isGenerating ? (
-                    <button
-                      onClick={() => handleStop(model)}
-                      className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                      aria-label="停止生成"
-                      title="停止生成"
-                    >
-                      <X size={16} />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleRegenerate(model)}
-                      className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                      aria-label="重新生成"
-                      title="重新生成"
-                    >
-                      <RotateCw size={16} />
-                    </button>
-                  )}
-                  {result.messages.length > 0 && (
-                    <button
-                      onClick={() =>
-                        handleCopy(model, result.messages[0].content)
-                      }
-                      className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                      aria-label="复制回答"
-                      title="复制回答"
-                    >
-                      {copiedModel === model ? (
-                        <Check size={16} className="text-green-500" />
-                      ) : (
-                        <Copy size={16} />
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* 回答内容 */}
-              <div className="flex-1 overflow-auto p-4">
-                {result.error ? (
-                  <div className="text-red-500 text-sm">
-                    错误: {result.error}
-                  </div>
-                ) : result.messages.length > 0 ? (
-                  <div className="prose dark:prose-invert max-w-none">
-                    <MessageItem
-                      message={result.messages[0]}
-                      isTyping={result.isGenerating}
-                    />
-                  </div>
-                ) : result.isGenerating ? (
-                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-500"></div>
-                    <span className="text-sm">正在生成...</span>
-                  </div>
+      <div className={`grid gap-4 ${gridColsClass}`}>
+        {Array.from(results.entries()).map(([model, result]) => (
+          <div
+            key={model}
+            className="flex flex-col rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+          >
+            {/* 模型头部 */}
+            <div className="flex items-center justify-between rounded-t-xl border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-900/40">
+              <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {model}
+              </h3>
+              <div className="flex items-center gap-1">
+                {result.isGenerating ? (
+                  <button
+                    onClick={() => handleStop(model)}
+                    className="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                    aria-label="停止生成"
+                    title="停止生成"
+                  >
+                    <X size={15} />
+                  </button>
                 ) : (
-                  <div className="text-gray-400 dark:text-gray-600 text-sm">
-                    暂无内容
-                  </div>
+                  <button
+                    onClick={() => handleRegenerate(model)}
+                    className="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                    aria-label="重新生成"
+                    title="重新生成"
+                  >
+                    <RotateCw size={15} />
+                  </button>
+                )}
+                {result.messages.length > 0 && (
+                  <button
+                    onClick={() =>
+                      handleCopy(model, result.messages[0].content)
+                    }
+                    className="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                    aria-label="复制回答"
+                    title="复制回答"
+                  >
+                    {copiedModel === model ? (
+                      <Check size={15} className="text-green-500" />
+                    ) : (
+                      <Copy size={15} />
+                    )}
+                  </button>
                 )}
               </div>
             </div>
-          ))}
-        </div>
+
+            {/* 回答内容 */}
+            <div className="flex-1 overflow-auto p-3">
+              {result.error ? (
+                <div className="text-sm text-red-500">
+                  错误: {result.error}
+                </div>
+              ) : result.messages.length > 0 ? (
+                <MessageItem
+                  message={result.messages[0]}
+                  isTyping={result.isGenerating}
+                />
+              ) : result.isGenerating ? (
+                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"></div>
+                  <span className="text-sm">正在生成...</span>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  暂无内容
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
