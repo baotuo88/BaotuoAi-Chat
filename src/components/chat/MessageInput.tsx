@@ -1193,6 +1193,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
     };
 
     return (
+      <>
       <div
         className={`glass-shell relative flex w-full flex-col rounded-xl border focus-within:ring-2 focus-within:ring-blue-100/50 dark:focus-within:ring-blue-900/30 focus-within:border-blue-400/50 transition-[background-color,border-color,box-shadow] duration-200 ${composerPaddingClass}`}
         aria-busy={isInputBusy}
@@ -2031,4 +2032,6 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
   },
 );
 
-MessageInput.displayName = "M
+MessageInput.displayName = "MessageInput";
+
+export default MessageInput;
