@@ -2,6 +2,10 @@ import type { Attachment, RAGConfig } from "../../types";
 import { parseDocumentFile } from "../../services/api/docParseService";
 import { resolveDocumentParseToken } from "../security/localSecretResolvers";
 import { logDevError } from "./devLogger";
+import {
+  isOfficeDocument,
+  parseOfficeDocument,
+} from "./officeDocumentParser";
 
 const TEXT_MIME_TYPES = new Set([
   "application/javascript",
@@ -143,6 +147,27 @@ export async function createChatDocumentAttachment(
       },
       parsed: false,
     };
+  }
+
+  // Try client-side Office document parsing first (Excel, PPT, DOCX)
+  if (isOfficeDocument(file)) {
+    try {
+      const markdown = await parseOfficeDocument(file);
+      const originalUrl = await trySaveOriginalDocument(file, saveOriginalFile);
+      return {
+        attachment: {
+          id,
+          mimeType: "text/markdown",
+          data: encodeTextToBase64(markdown),
+          ...(originalUrl ? { url: originalUrl } : {}),
+          fileName: file.name,
+        },
+        parsed: true,
+      };
+    } catch (error) {
+      logDevError("Client-side Office parsing failed, falling back to cloud parser:", error);
+      // Fall through to cloud parser
+    }
   }
 
   const markdown = await parseFileToMarkdown(file, rag);
