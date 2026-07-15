@@ -20,6 +20,7 @@ import FollowUpQuestions from "@/components/chat/FollowUpQuestions";
 import { Logo } from "@/components/ui/Icons";
 import ModelSelector from "@/components/chat/ModelSelector";
 import ModelComparisonView from "@/components/chat/ModelComparisonView";
+import { useComparisonStore } from "@/store/core/comparisonStore";
 import type { ModelInfo } from "@/services/api/chatService";
 import { resolveSkillsForMessage } from "@/services/api/skillService";
 import {
@@ -220,9 +221,11 @@ const ChatApp = () => {
 
   const [viewMode, setViewMode] = useState<ChatPanel>("chat");
   const [settingsTab, setSettingsTab] = useState<SettingsTabId>("providers");
-  const [comparisonMode, setComparisonMode] = useState(false);
-  const [comparisonModels, setComparisonModels] = useState<string[]>([]);
-  const [comparisonPrompt, setComparisonPrompt] = useState("");
+  const comparisonActive = useComparisonStore((s) => s.active);
+  const comparisonColumns = useComparisonStore((s) => s.columns);
+  const startComparison = useComparisonStore((s) => s.start);
+  const addComparisonTurn = useComparisonStore((s) => s.addUserTurn);
+  const closeComparison = useComparisonStore((s) => s.close);
 
   const [serverConfigResolved, setServerConfigResolved] = useState(false);
   const [serverModelBootstrapReady, setServerModelBootstrapReady] =
@@ -384,7 +387,7 @@ const ChatApp = () => {
   const isChatEmpty =
     messages.length === 0 &&
     !currentSession?.systemInstruction &&
-    !(comparisonMode && comparisonModels.length > 0 && comparisonPrompt);
+    !comparisonActive;
   const [welcomeState, setWelcomeState] = useState<
     "visible" | "exiting" | "hidden"
   >("hidden");
@@ -1931,18 +1934,16 @@ const ChatApp = () => {
   };
 
   const handleStartComparison = (models: string[]) => {
-    setComparisonModels(models);
-    setComparisonMode(true);
+    startComparison(models);
   };
 
   const handleComparisonPromptSubmit = (prompt: string) => {
-    setComparisonPrompt(prompt);
+    if (!prompt.trim()) return;
+    addComparisonTurn(prompt);
   };
 
   const handleCloseComparison = () => {
-    setComparisonMode(false);
-    setComparisonModels([]);
-    setComparisonPrompt("");
+    closeComparison();
   };
 
   // --- Render ---
@@ -2167,17 +2168,14 @@ const ChatApp = () => {
                       );
                     })}
 
-                    {comparisonMode &&
-                      comparisonModels.length > 0 &&
-                      comparisonPrompt && (
-                        <div className="mt-4">
-                          <ModelComparisonView
-                            prompt={comparisonPrompt}
-                            models={comparisonModels}
-                            onClose={handleCloseComparison}
-                          />
-                        </div>
-                      )}
+                    {comparisonActive && comparisonColumns.length > 0 && (
+                      <div className="mt-4">
+                        <ModelComparisonView
+                          availableModels={availableModels}
+                          onClose={handleCloseComparison}
+                        />
+                      </div>
+                    )}
 
                     <div ref={messagesEndRef} />
                   </div>
@@ -2217,7 +2215,7 @@ const ChatApp = () => {
                   </div>
                 )}
                 <div className="flex items-center gap-2 mb-3">
-                  {!comparisonMode && availableModels.length >= 2 && (
+                  {!comparisonActive && availableModels.length >= 2 && (
                     <ModelSelector onStartComparison={handleStartComparison} />
                   )}
                 </div>
@@ -2225,7 +2223,7 @@ const ChatApp = () => {
                   ref={messageInputRef}
                   variant={messageInputVariant}
                   onSend={(text, attachments) => {
-                    if (comparisonMode && comparisonModels.length > 0) {
+                    if (comparisonActive) {
                       handleComparisonPromptSubmit(text);
                     } else {
                       handleSendMessage(text, attachments);
