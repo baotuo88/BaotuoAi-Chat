@@ -121,10 +121,39 @@ export function formatToolDisplayValue(value: unknown): ToolDisplayValue {
   let text: string;
 
   try {
-    text =
-      typeof normalized === "string"
-        ? normalized
-        : JSON.stringify(normalized, null, 2);
+    // 如果是对象且包含 result 字段，尝试提取实际结果内容
+    if (
+      normalized !== null &&
+      typeof normalized === "object" &&
+      !Array.isArray(normalized) &&
+      "result" in normalized
+    ) {
+      const resultValue = (normalized as any).result;
+      // 如果 result 也是对象，格式化它
+      if (
+        resultValue !== null &&
+        typeof resultValue === "object" &&
+        !Array.isArray(resultValue)
+      ) {
+        // 转换为易读的键值对格式
+        const entries = Object.entries(resultValue);
+        const lines = entries.map(([key, val]) => {
+          const displayKey = key
+            .replace(/_/g, " ")
+            .replace(/([a-z])([A-Z])/g, "$1 $2")
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+          return `${displayKey}: ${val}`;
+        });
+        text = lines.join("\n");
+      } else {
+        text = JSON.stringify(normalized, null, 2);
+      }
+    } else {
+      text =
+        typeof normalized === "string"
+          ? normalized
+          : JSON.stringify(normalized, null, 2);
+    }
   } catch (error) {
     state.truncated = true;
     text =
