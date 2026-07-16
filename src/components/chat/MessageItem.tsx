@@ -135,6 +135,8 @@ const actionButtonFocusClass =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-background";
 
 const markdownFileNamePattern = /\.(?:md|markdown)$/i;
+const EMPTY_SOURCES: NonNullable<Message["searchSources"]> = [];
+const EMPTY_SKILL_INVOCATIONS: NonNullable<Message["skillInvocations"]> = [];
 const MESSAGE_IMAGE_PROXY_PREFIX = "https://serveproxy.com/?url=";
 const DEFAULT_MESSAGE_IMAGE_EXPORT_WIDTH = 820;
 const MESSAGE_IMAGE_EXPORT_PADDING_PX = 24;
@@ -1103,13 +1105,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
   });
 
   // Search Data from Message
-  const sources = message.searchSources || [];
+  const sources = message.searchSources || EMPTY_SOURCES;
 
   // RAG Data
-  const ragSources = message.ragSources || [];
+  const ragSources = message.ragSources || EMPTY_SOURCES;
 
   // Tool Data
-  const skillInvocations = message.skillInvocations || [];
+  const skillInvocations = message.skillInvocations || EMPTY_SKILL_INVOCATIONS;
 
   const handleAttachmentClick = (index: number) => {
     if (!message.attachments) return;
@@ -1378,7 +1380,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   <MessageOutputRenderer
                     message={message}
                     displayedContent={message.content}
-                    searchSources={readingMode === "message" ? sources : []}
+                    searchSources={readingMode === "message" ? sources : EMPTY_SOURCES}
                     onFileClick={handleFileClick}
                   />
                 )}

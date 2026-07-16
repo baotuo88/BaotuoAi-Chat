@@ -806,7 +806,11 @@ const DiagramBlock = ({
       }, 0);
       return () => window.clearTimeout(updateTimer);
     }
-  }, [diagram]);
+    // Depend on primitive fields, not the diagram object identity: the parent
+    // re-creates a fresh diagram object every render, which would otherwise
+    // re-fire this effect (and its setState) on every streamed token.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diagram.incomplete, diagram.content]);
 
   React.useEffect(() => {
     if (!isFullscreen) return;
