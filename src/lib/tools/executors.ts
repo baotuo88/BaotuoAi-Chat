@@ -119,14 +119,20 @@ export async function executeGetWeather(
 ): Promise<ToolExecutionResult> {
   try {
     const unitParam = unit === "fahrenheit" ? "?u" : "?m";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+
     const response = await fetch(
       `https://wttr.in/${encodeURIComponent(location)}${unitParam}&format=j1`,
       {
         headers: {
           "User-Agent": "BaotuoChat/1.0",
         },
+        signal: controller.signal,
       },
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`天气 API 返回错误: ${response.status}`);
@@ -155,9 +161,22 @@ export async function executeGetWeather(
       },
     };
   } catch (error) {
+    // 提供更友好的错误提示和降级方案
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        return {
+          success: false,
+          error: `天气服务响应超时。wttr.in 可能在您的网络环境下访问较慢，建议：\n1. 稍后重试\n2. 使用其他天气服务（如 weather.com.cn）\n3. 检查网络连接`,
+        };
+      }
+      return {
+        success: false,
+        error: `天气查询错误: ${error.message}。可能是网络问题或 wttr.in 服务暂时不可用。`,
+      };
+    }
     return {
       success: false,
-      error: `天气查询错误: ${error instanceof Error ? error.message : "未知错误"}`,
+      error: "天气查询失败: 未知错误",
     };
   }
 }
