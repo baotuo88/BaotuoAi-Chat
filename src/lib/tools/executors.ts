@@ -189,9 +189,17 @@ export async function executeWebSearch(
   numResults: number = 5,
 ): Promise<ToolExecutionResult> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     const response = await fetch(
       `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`,
+      {
+        signal: controller.signal,
+      },
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`搜索 API 返回错误: ${response.status}`);
@@ -231,6 +239,12 @@ export async function executeWebSearch(
       },
     };
   } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      return {
+        success: false,
+        error: "搜索服务响应超时，请稍后重试",
+      };
+    }
     return {
       success: false,
       error: `搜索错误: ${error instanceof Error ? error.message : "未知错误"}`,
@@ -247,9 +261,17 @@ export async function executeCurrencyConverter(
   toCurrency: string,
 ): Promise<ToolExecutionResult> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     const response = await fetch(
       `https://api.exchangerate-api.com/v4/latest/${fromCurrency.toUpperCase()}`,
+      {
+        signal: controller.signal,
+      },
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`汇率 API 返回错误: ${response.status}`);
@@ -276,6 +298,12 @@ export async function executeCurrencyConverter(
       },
     };
   } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      return {
+        success: false,
+        error: "汇率服务响应超时，请稍后重试",
+      };
+    }
     return {
       success: false,
       error: `货币转换错误: ${error instanceof Error ? error.message : "未知错误"}`,
