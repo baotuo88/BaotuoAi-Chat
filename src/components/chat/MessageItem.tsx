@@ -780,7 +780,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
     };
 
     if (!isTyping) {
-      updateDisplayedContent(message.content);
+      // Guard against an unconditional setState here: when a completed message
+      // re-renders (e.g. a sibling column/message is still streaming), firing
+      // setDisplayedContent every render creates a render→setState→render loop
+      // (React #185). Only update when the value actually changed.
+      if (displayedContentRef.current !== message.content) {
+        updateDisplayedContent(message.content);
+      }
       return;
     }
 
