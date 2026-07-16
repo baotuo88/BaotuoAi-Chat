@@ -1411,32 +1411,32 @@ const MessageItem: React.FC<MessageItemProps> = ({
           document.body,
         )}
 
-      <div className="message-item group relative flex flex-col md:flex-row gap-2 md:gap-3 rounded-md transition-[background-color,border-color] duration-200 border border-transparent px-3 py-3 bg-gray-50/0 hover:bg-gray-50/80 dark:hover:bg-muted/40">
+      <div className="message-item group relative flex flex-col md:flex-row gap-3 md:gap-4 rounded-xl transition-all duration-200 border border-gray-100 dark:border-border/50 px-4 py-4 bg-white/50 dark:bg-background/50 hover:bg-white dark:hover:bg-background hover:shadow-sm hover:border-gray-200 dark:hover:border-border">
         {/* Avatar & Header Section */}
-        <div className="flex items-center w-full md:w-auto justify-between md:justify-start gap-2 md:block md:shrink-0 md:mt-0.5 select-none">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center w-full md:w-auto justify-between md:justify-start gap-2 md:block md:shrink-0 md:mt-1 select-none">
+          <div className="flex items-center gap-2.5">
             {message.role === "model" ? (
               <Tooltip content={message.model || t("model")} position="right">
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-red-300 shadow-sm border border-white dark:border-border flex items-center justify-center text-white">
-                  <Bot size={14} className="md:hidden" aria-hidden="true" />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-red-400 to-red-500 shadow-md border border-white/20 dark:border-border/50 flex items-center justify-center text-white">
+                  <Bot size={15} className="md:hidden" aria-hidden="true" />
                   <Bot
-                    size={18}
+                    size={20}
                     className="hidden md:block"
                     aria-hidden="true"
                   />
                 </div>
               </Tooltip>
             ) : (
-              <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-green-300 shadow-sm border border-white dark:border-border flex items-center justify-center text-white">
-                <User size={14} className="md:hidden" aria-hidden="true" />
+              <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 shadow-md border border-white/20 dark:border-border/50 flex items-center justify-center text-white">
+                <User size={15} className="md:hidden" aria-hidden="true" />
                 <User
-                  size={18}
+                  size={20}
                   className="hidden md:block"
                   aria-hidden="true"
                 />
               </div>
             )}
-            <span className="text-sm font-medium text-gray-700 dark:text-foreground md:hidden">
+            <span className="text-sm font-semibold text-gray-800 dark:text-foreground md:hidden">
               {message.role === "model"
                 ? message.model || t("model")
                 : t("user")}
@@ -1444,7 +1444,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           </div>
 
           <Tooltip content={t("sentTime")} position="left">
-            <span className="text-[10px] text-gray-400 dark:text-muted-foreground/70 font-normal md:hidden">
+            <span className="text-[11px] text-gray-500 dark:text-muted-foreground/70 font-medium md:hidden">
               {timeString}
             </span>
           </Tooltip>
@@ -1453,7 +1453,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
         {/* Content Area */}
         <div
           ref={visibleMessageContentRef}
-          className="flex-1 min-w-0 pl-1 md:pl-0"
+          className="flex-1 min-w-0 pl-0.5 md:pl-0"
         >
           {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
@@ -1529,14 +1529,19 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 <div
                   role="alert"
                   aria-live="polite"
-                  className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm leading-5 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100"
+                  className="mb-3 rounded-lg border-l-4 border-red-400 bg-red-50/80 dark:bg-red-950/20 px-4 py-3 text-sm leading-relaxed shadow-sm"
                 >
-                  <div className="font-semibold">{t("generationFailed")}</div>
-                  <div className="mt-1 wrap-break-word">
+                  <div className="flex items-center gap-2 font-semibold text-red-900 dark:text-red-100">
+                    <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
+                    </svg>
+                    {t("generationFailed")}
+                  </div>
+                  <div className="mt-1.5 wrap-break-word text-red-800 dark:text-red-200">
                     {generationError.message}
                   </div>
                   {generationError.recoverable ? (
-                    <div className="mt-1 text-xs opacity-80">
+                    <div className="mt-1.5 text-xs text-red-700 dark:text-red-300 opacity-90">
                       {t("generationRecoverable")}
                     </div>
                   ) : null}
@@ -1546,7 +1551,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
               {/* Loading State */}
               {isLoading ? (
                 <div
-                  className="relative -top-0.5 h-8 w-14 text-red-300 dark:text-red-400"
+                  className="relative -top-0.5 h-9 w-16 text-red-400 dark:text-red-400"
                   role="status"
                   aria-label={t("generatingResponse")}
                 >
@@ -1591,9 +1596,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
           {/* Footer / Toolbar */}
           {!isEditing && !isTyping && (
-            <div className="flex items-center justify-between mt-1 h-6 opacity-100 md:opacity-40 md:group-hover:opacity-100 transition-opacity duration-200">
-              <div className="flex items-center text-xs text-gray-400 dark:text-muted-foreground/70 select-none [&>span:not(:last-child)]:after:content-['·'] [&>span:not(:last-child)]:after:mx-1 [&>span:not(:last-child)]:after:text-gray-300 dark:[&>span:not(:last-child)]:after:text-border">
-                <span className="hidden md:inline hover:text-gray-600 dark:hover:text-foreground/85 transition-colors cursor-default">
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-border/30 min-h-7 opacity-100 md:opacity-50 md:group-hover:opacity-100 transition-opacity duration-200">
+              <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500 dark:text-muted-foreground/80 font-medium select-none">
+                <span className="hidden md:inline hover:text-gray-700 dark:hover:text-foreground transition-colors cursor-default">
                   <Tooltip
                     className="inline-flex"
                     content={t("generationTime")}
@@ -1603,7 +1608,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   </Tooltip>
                 </span>
                 {durationString && (
-                  <span className="hidden md:inline hover:text-gray-600 dark:hover:text-foreground/85 transition-colors cursor-default">
+                  <span className="hidden md:inline hover:text-gray-700 dark:hover:text-foreground transition-colors cursor-default">
                     <Tooltip
                       className="inline-flex"
                       content={t("duration")}
@@ -1614,7 +1619,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   </span>
                 )}
                 {tokenCount > 0 && (
-                  <span className="hidden md:inline hover:text-gray-600 dark:hover:text-foreground/85 transition-colors cursor-default">
+                  <span className="hidden md:inline hover:text-gray-700 dark:hover:text-foreground transition-colors cursor-default">
                     <Tooltip
                       className="inline-flex"
                       content={t("tokens")}

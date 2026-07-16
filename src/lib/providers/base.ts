@@ -94,13 +94,36 @@ export class ProviderFactory {
    */
   static createOpenAIClient(provider: ProviderConfig): OpenAI {
     const apiKey = this.validateApiKey(provider);
-    this.assertSdkBaseUrlAllowed(provider, "OpenAI");
-    const baseURL = this.getEffectiveBaseUrl(provider.baseUrl, "OpenAI");
+    this.assertSdkBaseUrlAllowed(provider, provider.type);
+    const baseURL = this.getEffectiveBaseUrl(provider.baseUrl, provider.type);
     if (baseURL) {
       validateOutboundUrl(baseURL, getSafeUrlPolicy("provider"));
     }
 
-    return new OpenAI({ apiKey, baseURL });
+    // Some third-party gateways (e.g. new-api based proxies) run a WAF that
+    // blocks the OpenAI SDK's default fingerprint headers (User-Agent
+    // "OpenAI/JS ..." and the x-stainless-* family) with a 403 "Your request
+    // was blocked." When talking to a custom (non-official) base URL, strip
+    // those headers so the request looks like a plain HTTP call. Official
+    // OpenAI endpoints are left untouched.
+    const officialBaseUrl = this.getEffectiveBaseUrl(undefined, provider.type);
+    const isCustomBaseUrl = !!baseURL && baseURL !== officialBaseUrl;
+    const defaultHeaders = isCustomBaseUrl
+      ? {
+          "User-Agent": "Mozilla/5.0",
+          "x-stainless-lang": null,
+          "x-stainless-package-version": null,
+          "x-stainless-os": null,
+          "x-stainless-arch": null,
+          "x-stainless-runtime": null,
+          "x-stainless-runtime-version": null,
+          "x-stainless-retry-count": null,
+          "x-stainless-timeout": null,
+          "x-stainless-async": null,
+        }
+      : undefined;
+
+    return new OpenAI({ apiKey, baseURL, defaultHeaders });
   }
 
   /**
