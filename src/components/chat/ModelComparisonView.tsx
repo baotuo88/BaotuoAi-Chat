@@ -43,15 +43,13 @@ export const ModelComparisonView: React.FC<ModelComparisonViewProps> = ({
   );
 
   // Subscribe only to generation-relevant fields to avoid re-triggering on content updates
-  const generationTrigger = useComparisonStore(
-    (s) =>
-      s.columns
-        .map((c) => {
-          const last = c.messages[c.messages.length - 1];
-          return `${c.model}:${c.isGenerating}:${last?.id || 'none'}:${last?.content ? 'filled' : 'empty'}`;
-        })
-        .join('|'),
-    (a, b) => a === b, // Custom equality function to prevent unnecessary updates
+  const generationTrigger = useComparisonStore((s) =>
+    s.columns
+      .map((c) => {
+        const last = c.messages[c.messages.length - 1];
+        return `${c.model}:${c.isGenerating}:${last?.id || 'none'}:${last?.content ? 'filled' : 'empty'}`;
+      })
+      .join('|'),
   );
 
   const [copiedModel, setCopiedModel] = useState<string | null>(null);
